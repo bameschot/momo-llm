@@ -77,6 +77,9 @@ class SimpleTokenizerV2:
     
     def decode(self,ids):
         return re.sub(TOKENIZE_INTERPUNCTION_REGEX,r'\1'," ".join([self.id_to_word[i] for i in ids]))
+    
+    def vocabSize(self):
+        return len(self.word_to_id)
 
 class GPT2Tokenizer:
     def __init__(self):
@@ -86,7 +89,10 @@ class GPT2Tokenizer:
         return self.tokenizer.encode(text=text,allowed_special={END_OF_TEXT_VOCAB_WORD})
     
     def decode(self,ids):
-        return self.decode(ids)
+        return self.tokenizer.decode(ids)
+    
+    def vocabSize(self):
+        return 50257 #hardcoded for tiktoken gpt2
 
 class GPTDatasetV1(Dataset):
     def __init__(self,directory, tokenizer, maxLength, stride):
@@ -147,19 +153,28 @@ def createDataLoaderV1(tokenizer, directory=TOKENIZER_PROCESSED_DATA_DIRECTORY,n
 
 
 vocab = preprocessInputData(readInputFilePaths(TOKENIZER_INPUT_DATA_DIRECTORY),TOKENIZER_PROCESSED_DATA_DIRECTORY)
-print(f'vocabulary size: {len(vocab)}') 
-
 gptTokenizer = GPT2Tokenizer()
+print(f'vocabulary size: {len(vocab)} tokenizer size: {gptTokenizer.vocabSize()}') 
 
-ds2 = GPTDatasetV2(directory=TOKENIZER_PROCESSED_DATA_DIRECTORY, tokenizer = gptTokenizer,maxLength= 4, stride=1)
-print(f'ds2 next {ds2.__getitem__(0)}')
-dataloader = createDataLoaderV1(tokenizer=gptTokenizer,batchSize=1,maxLength=4,stride=1,shuffle=False)
 
+#dataloader of lenghh and stride 4
+maxLength = 4
+dataloader = createDataLoaderV1(tokenizer=gptTokenizer,batchSize=8,maxLength=maxLength,stride=maxLength,shuffle=False)
+
+#create embedding layer of the vocabulary size and the desired output dimension
+vocabSize = gptTokenizer.vocabSize()
+outputDimension = 256 #configurable, 12228 for gpt3
+embeddingLayer = torch.nn.Embedding(vocabSize, outputDimension)
+
+#create a positional embedding layer
+positionalEmbeddingLayer = torch.nn.Embedding(vocabSize,outputDimension)
+positionalEmbedding = positionalEmbeddingLayer(torch.arange(maxLength))
+
+
+#apply the embedding to a single batch of data from the dataloader
 dataIter = iter(dataloader)
-print(next(dataIter))
-
-
-
-
-
+input = next(dataIter)[0]
+print(f"input tensor shape {input.shape}")
+embeddedInputs = embeddingLayer(input) + positionalEmbedding
+print(f"embedding shape {embeddingLayer.__sizeof__()}")
 
