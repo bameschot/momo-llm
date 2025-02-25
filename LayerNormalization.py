@@ -1,16 +1,18 @@
 import torch
 import torch.nn as nn
 
-torch.manual_seed(123)
-torch.set_printoptions(sci_mode=False)
-
-batchExample = torch.randn(2,5)
-layer = nn.Sequential(nn.Linear(5,6),nn.ReLU())
-out = layer(batchExample)
-print(out)
-
-mean = out.mean(dim=-1,keepdim=True)
-var = out.var(dim=-1,keepdim=True)
-print(f"mean {mean}")
-print(f"var  {var}")
-
+class LayerNormalization(nn.Module):
+    def __init__(self,embeddingDimension):
+        super().__init__()
+        self.epsilon=1e-5
+        #trainable shift and scale parameters
+        self.scale = nn.Parameter(torch.ones(embeddingDimension))
+        self.shift = nn.Parameter(torch.zeros(embeddingDimension))
+    
+    def forward(self,x):
+        #calculate the normalized x
+        mean = x.mean(dim=-1,keepdim=True)
+        var = x.var(dim=-1,keepdim=True)
+        normalizedX = (x-mean) / torch.sqrt(var+self.epsilon)
+        #scale and offset the normalized x with the trainable parameters
+        return self.scale * normalizedX + self.shift

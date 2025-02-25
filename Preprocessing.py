@@ -150,7 +150,6 @@ def createDataLoaderV1(tokenizer, directory=TOKENIZER_PROCESSED_DATA_DIRECTORY,n
         num_workers=numWorkers
     )
     
-class embedd
 
 vocab = preprocessInputData(readInputFilePaths(TOKENIZER_INPUT_DATA_DIRECTORY),TOKENIZER_PROCESSED_DATA_DIRECTORY)
 gptTokenizer = GPT2Tokenizer()
