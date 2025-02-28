@@ -12,7 +12,7 @@ class LayerNormalization(nn.Module):
     def forward(self,x):
         #calculate the normalized x
         mean = x.mean(dim=-1,keepdim=True)
-        var = x.var(dim=-1,keepdim=True)
+        var = x.var(dim=-1,keepdim=True,unbiased=False)
         normalizedX = (x-mean) / torch.sqrt(var+self.epsilon)
         #scale and offset the normalized x with the trainable parameters
         return self.scale * normalizedX + self.shift
