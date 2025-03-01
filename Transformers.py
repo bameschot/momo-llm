@@ -24,9 +24,7 @@ class GPTTransformerBlock(nn.Module):
 
         shortcut = x
         x = self.normalizationLayer2(x)
-        print(f"x = self.normalizationLayer2(x) = {x}")
         x = self.feedForward(x)
-        print(f" x = self.feedForward(x) = {x}")
         x = self.dropoutShortcut(x)
         x = x + shortcut
 

@@ -29,7 +29,7 @@ class GPTModel(nn.Module):
         #input tensor properties
         batchSize, sequenceLength = inIndex.shape
         
-        #embeddings and positional embeddings for the input
+        #embeddings and positional embeddings for the input, ensures that the embeddings are on the correct device
         inTokenEmbeddings = self.tokenEmbeddings(inIndex)
         inPositionalEmbeddings = self.positionalEmbeddings(
             torch.arange(sequenceLength,device=inIndex.device)
@@ -56,16 +56,16 @@ class GPTModel(nn.Module):
         return sizeBytes / (1024 * 1024)
 
 
-class DummyTransformerBlock(nn.Module):
-    def __init__(self, config):
-        super().__init__()
+# class DummyTransformerBlock(nn.Module):
+#     def __init__(self, config):
+#         super().__init__()
     
-    def forward(self,x):
-        return x
+#     def forward(self,x):
+#         return x
 
-class DummyLayerNormalization(nn.Module):
-    def __init__(self, embeddingDimension, epsilon=1e-5):
-        super().__init__()
+# class DummyLayerNormalization(nn.Module):
+#     def __init__(self, embeddingDimension, epsilon=1e-5):
+#         super().__init__()
     
-    def forward(self,x):
-        return x
+#     def forward(self,x):
+#         return x
