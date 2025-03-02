@@ -48,11 +48,11 @@ else:
 device = torch.device("cpu")
 print(f"Running on {device}!")
 
-model = GPTModel(config=GPT_CONFIG_SMALL).to(device)
+torch.no_grad()
+model = GPTModel(config=GPT_CONFIG_SMALL).eval().to(device)
 #model = torch.compile(model)
 
 #disables dropout layers for faster and better inference
-model.eval()
 
 tokenizer = tiktoken.get_encoding('gpt2')
 startContext = "Hello, I am"
