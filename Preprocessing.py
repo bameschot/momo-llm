@@ -218,8 +218,10 @@ def createDataLoaderV1(tokenizer, text,numWorkers=0, batchSize=4,maxLength=256,s
         num_workers=numWorkers
     )
     
+print("start preprocessing")
+vocab = preprocessInputData(readInputFilePaths(TOKENIZER_INPUT_DATA_DIRECTORY),TOKENIZER_PROCESSED_DATA_DIRECTORY)
+print(f"vocab size {len(vocab)}")
 
-# vocab = preprocessInputData(readInputFilePaths(TOKENIZER_INPUT_DATA_DIRECTORY),TOKENIZER_PROCESSED_DATA_DIRECTORY)
 # gptTokenizer = GPT2Tokenizer()
 # print(f'vocabulary size: {len(vocab)} tokenizer size: {gptTokenizer.vocabSize()}') 
 
