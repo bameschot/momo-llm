@@ -1,3 +1,4 @@
+
 VOCABULARY_SIZE = "VocabularySize"
 CONTEXT_LENGTH = "ContextLength"
 EMBEDDING_DIMENSION = "EmbeddingDimension"
@@ -7,8 +8,6 @@ DROPOUT_EMBEDDING_RATE = "EmbeddingDropoutRate"
 DROPOUT_ATTENTION_RATE = "AttentionDropoutRate"
 DROPOUT_SHORTCUT_RATE = "TransformerDropoutRate"
 QKV_BIAS = "QKVBias"
-
-
 
 GPT_CONFIG_SMALL = {
     VOCABULARY_SIZE: 50257,
@@ -72,3 +71,5 @@ GPT_CONFIG_X_LARGE = {
     DROPOUT_SHORTCUT_RATE: 0.1,
     QKV_BIAS: False,
 }
+
+

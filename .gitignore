@@ -172,5 +172,5 @@ cython_debug/
 
 #custom
 **/processed-data/*.txt
-**/models/*.pth
+**/models/**
 **/loss-plot.pdf

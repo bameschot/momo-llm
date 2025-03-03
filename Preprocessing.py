@@ -42,8 +42,16 @@ def preprocessInputData(inputFilePaths, processedOutputFileDir):
         for inputFilePath in inputFilePaths: 
             print(f'Reading {inputFilePath}')
             with open(inputFilePath,"r",encoding = "utf-8") as input:
+                text = ""
+                
                 #read the whole file in one go to avoid ugly midsentence/word breaks
-                text = input.read()
+                while True: 
+                    line = input.readline()
+                    if line == '':
+                        break
+                    text += " "
+                    text += line.strip()
+
                 print(f"{inputFilePath} text size: {len(text)}")
                 
                 #split text into tokens
@@ -218,9 +226,9 @@ def createDataLoaderV1(tokenizer, text,numWorkers=0, batchSize=4,maxLength=256,s
         num_workers=numWorkers
     )
     
-print("start preprocessing")
-vocab = preprocessInputData(readInputFilePaths(TOKENIZER_INPUT_DATA_DIRECTORY),TOKENIZER_PROCESSED_DATA_DIRECTORY)
-print(f"vocab size {len(vocab)}")
+#print("start preprocessing")
+#vocab = preprocessInputData(readInputFilePaths(TOKENIZER_INPUT_DATA_DIRECTORY),TOKENIZER_PROCESSED_DATA_DIRECTORY)
+#print(f"vocab size {len(vocab)}")
 
 # gptTokenizer = GPT2Tokenizer()
 # print(f'vocabulary size: {len(vocab)} tokenizer size: {gptTokenizer.vocabSize()}') 

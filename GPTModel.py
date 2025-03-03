@@ -56,16 +56,4 @@ class GPTModel(nn.Module):
         return sizeBytes / (1024 * 1024)
 
 
-# class DummyTransformerBlock(nn.Module):
-#     def __init__(self, config):
-#         super().__init__()
-    
-#     def forward(self,x):
-#         return x
 
-# class DummyLayerNormalization(nn.Module):
-#     def __init__(self, embeddingDimension, epsilon=1e-5):
-#         super().__init__()
-    
-#     def forward(self,x):
-#         return x

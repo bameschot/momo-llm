@@ -4,24 +4,15 @@ import torch
 import torch.nn as nn
 import torch.optim
 
-from Preprocessing import GPT2Tokenizer, createDataLoaderV1, create_dataloader_v1
-from GenerateText import generateText, simpleTextGeneration
+from Preprocessing import GPT2Tokenizer, create_dataloader_v1
+from GenerateText import generateText, textToTokens, tokensToText
 from GPTModel import GPTModel
 from GPTModelConfig import *
+from GPTModelStorage import *
+
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-
-
-MODEL_FOLDER = "./models"
-
-def textToTokens(text,tkz):
-    encoded = tkz.encode(text)
-    return torch.tensor(encoded).unsqueeze(0)
-
-def tokensToText(tokens,tkz):
-    flat = tokens.squeeze(0)
-    return tkz.decode(flat.tolist())
 
 
 def calculationLossBatch(inputBatch,targetBatch,model,device):
@@ -75,28 +66,10 @@ def generateAndPrintSample(model, tokenizer, device, startContext):
     model.eval()
     encoded = textToTokens(startContext,tokenizer).to(device)
     with torch.no_grad():
-        tokenIds = generateText(model,encoded,50)
+        tokenIds = generateText(model,encoded,100)
         decodedText = tokensToText(tokenIds,tokenizer).replace("\n"," ")
         print(f"training text sample: {decodedText}")
     model.train()
-
-def storeCheckPoint(modelName,model,optimizer):
-    torch.save(
-        {
-            "ModelStateDict": model.state_dict(),
-            "OptimizerStateDict": optimizer.state_dict()
-        },
-        f"{MODEL_FOLDER}/{modelName}.pth"
-    )
-
-def loadModel(modelName,config,device,learningRate=0.004,weightDecay=0.1):
-    modelData = torch.load(f"{MODEL_FOLDER}/{modelName}.pth",device)
-    model = GPTModel(config).to(device)
-    model.load_state_dict(modelData["ModelStateDict"])
-    optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
-    optimizer.load_state_dict(modelData["OptimizerStateDict"])
-    return model, optimizer
-
 
 def trainModel(
         modelName,
@@ -115,7 +88,7 @@ def trainModel(
         startContext="Will you leave the green fields devoid capital"
         ):          
     if loadModelFromCheckpoint:
-        model,optimizer = loadModel(modelName,modelConfig,device,learningRate,weightDecay)
+        model,optimizer = loadCheckpoint(modelName,modelConfig,device,learningRate,weightDecay)
         print(f"Loaded model {modelName} from file")
     else: 
         model = GPTModel(config).to(device)
@@ -198,11 +171,17 @@ def trainModelSimple(
     
         #end time of the epoch
         endEpochTs = time.time() * 1000.0
-        print(f"Epoch processing time: {(endEpochTs-startEpochTs)} ms")
+        print(f"Epoch [{epoch}] processing time: {(endEpochTs-startEpochTs)} ms")
         #After each epoch print a sample of the model's output
         generateAndPrintSample(model,tokenizer,device,startContext)
+        ##after each epoch plot progress
+        #epochs_tensor = torch.linspace(0, numberOfEpochs, len(trainingLosses))
+        #plot_losses(epochs_tensor, tokensSeen, trainingLosses, validationLosses)
 
     #after all epochs return the training losses and validation losses
+    storeModel(modelName,model)
+    storeCheckPoint(modelName,model,optimizer)
+    print(f"Storing model: {modelName}")
     return trainingLosses, validationLosses, trackTokensSeen    
 
 def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses):
@@ -225,11 +204,11 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses):
     plt.savefig("loss-plot.pdf")
     plt.show()
 
-
-
-filePath = "input-data/contribution-critique-political-economy.txt"
+#filePath = "input-data/wealth-of-nations.txt"
+#filePath = "input-data/principles-of-political-economy.txt"
+#filePath = "input-data/contribution-critique-political-economy.txt"
 #filePath = "input-data/the-verdict.txt"
-#filePath = "processed-data/processed-text.txt"
+filePath = "processed-data/processed-text.txt"
 
 with open(filePath, "r", encoding="utf-8") as f:
     textData = f.read()
@@ -299,7 +278,7 @@ device = torch.device("mps")
 print("\nStart training")
 numberOfEpochs = 5
 trainingLosses, validationLosses, tokensSeen = trainModel(
-    modelName="TestCapital",
+    modelName="TestEconomy",
     modelConfig=GPT_CONFIG_SMALL,
     loadModelFromCheckpoint=True,
     trainingDataLoader=trainingDataLoader,
@@ -308,10 +287,10 @@ trainingLosses, validationLosses, tokensSeen = trainModel(
     weightDecay=0.1,
     device=device,
     numberOfEpochs=numberOfEpochs,
-    evaluationFrequency=5,
-    checkpointStorageFrequency=20,
+    evaluationFrequency=10,
+    checkpointStorageFrequency=100,
     evaluationIterations=5,
-    startContext="how does capital compare to labour",
+    startContext="define capital as",
     tokenizer=tokenizer
 )
 
