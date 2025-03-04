@@ -97,11 +97,9 @@ def generateTextShift(model, idx, maxNewTokens,temperature=0.0,topK=None,eosId=N
         #slicingIndex = min(newTokenIdx+inputIdxLength,contextSize)*-1
         #idxConditioned = idx[:,slicingIndex:]
         if generatedTokenIdx+inputIdxLength<contextSize:
-            #slicingIndex = min(newTokenIdx+inputIdxLength,contextSize)*-1
             idxConditioned = idx[:,(generatedTokenIdx+inputIdxLength)*-1:]
         else:
             idxConditioned = idx
-
 
         #no_grad ensure that no backwards passes are performed when running the model, in this mode inference is performed efficiently
         with torch.no_grad():
@@ -146,35 +144,3 @@ def generateTextShift(model, idx, maxNewTokens,temperature=0.0,topK=None,eosId=N
             print(tokensToText(tokens=idxNext,tkz=tokenizer),end="",flush=(generatedTokenIdx%3==0))
     
     return outIdx
-
-
-
-###########
-#
-###########
-# import tiktoken
-
-# torch.set_printoptions(sci_mode=False)
-
-# if not torch.backends.mps.is_available():
-#     if not torch.backends.mps.is_built():
-#         print("MPS not available because the current PyTorch install was not "
-#               "built with MPS enabled.")
-#         device = torch.device("cpu")
-#     else:
-#         print("MPS not available because the current MacOS version is not 12.3+ "
-#               "and/or you do not have an MPS-enabled device on this machine.")
-#         device = torch.device("cpu")
-# else:
-#     device = torch.device("mps")
-
-# #device = torch.device("cpu")
-# print(f"Running on {device}!")
-
-# model = GPTModel(config=GPT_CONFIG_SMALL).eval().to(device)
-# #model = torch.compile(model)
-
-
-
-        
-

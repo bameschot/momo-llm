@@ -102,6 +102,7 @@ class GPT2Tokenizer:
     def vocabSize(self):
         return 50257 #hardcoded for tiktoken gpt2
 
+
 class GPTDatasetV1(Dataset):
     def __init__(self,directory, tokenizer, maxLength, stride):
         self.tokenizer = tokenizer

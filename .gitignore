@@ -171,6 +171,7 @@ cython_debug/
 .pypirc
 
 #custom
+**/input-data/**
 **/processed-data/*.txt
 **/models/**
 **/loss-plot.pdf
