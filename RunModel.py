@@ -25,7 +25,7 @@ parser.add_argument("--tokensToGenerate", type=int, default=100, help="The numbe
 parser.add_argument("--temperature",type=float, default=0.2,help="The temperature to use when generating tokens, regulates variety in output")
 parser.add_argument("--topK",type=int, default=5,help="The numper of most probable to pick the next token from, together with temperature this regulates variety in ouput")
 parser.add_argument("--printNextToken", action='store_true',help="Indicates if the each token should be printed as it is generated")
-parser.add_argument("--compileModel", action='store_false',help="Indicates if the model should be compiled first")
+parser.add_argument("--compileModel", action='store_true',help="Indicates if the model should be compiled first")
 args = parser.parse_args()
 
 p_modelname = args.modelname

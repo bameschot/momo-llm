@@ -46,7 +46,7 @@ def generateText(model, idx, maxNewTokens,temperature=0.0,topK=None,eosId=None,p
         #turn batch,ntokens,ctxsize into batch,ctxsize to focus on the last step only
         logits = logits[:,-1,:]
 
-        #topK filtering, if enables
+        #topK filtering, if enabled
         if topK is not None:
             topLogits,_ = torch.topk(logits,topK)
             #select the lowest probability still allowed by the topK selection
