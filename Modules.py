@@ -1,17 +1,56 @@
 import torch
 import torch.nn as nn
 
-from GPTModelConfig import *
-
-class CausalSelfAttention (nn.Module):
-    def __init__(self,config):
+class GELU(nn.Module):
+    def __init__(self):
         super().__init__()
-        self.embeddingDimension=config[EMBEDDING_DIMENSION]
-        self.wQuery = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION],config[QKV_BIAS])
-        self.wKey = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION],config[QKV_BIAS])
-        self.wValue = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION],config[QKV_BIAS])
-        self.dropout = torch.nn.Dropout(config[DROPOUT_ATTENTION_RATE])
-        self.register_buffer('mask', torch.triu(torch.ones(config[CONTEXT_LENGTH],config[CONTEXT_LENGTH]),diagonal=1))
+
+    def forward(self,x):
+        return 0.5 * x * (1 + torch.tanh(
+            torch.sqrt(torch.tensor(2.0 / torch.pi)) * (x + 0.044715 * torch.pow(x,3))
+            )
+        )
+
+class FeedForward(nn.Module):
+    def __init__(self,embeddingDimension, expansionFactor=4):
+        super().__init__()
+        self.layers = nn.Sequential(
+            #expand
+            nn.Linear(embeddingDimension,expansionFactor * embeddingDimension),
+            #activate
+            GELU(),
+            #contract
+            nn.Linear(4 * embeddingDimension, embeddingDimension)
+        )
+
+    def forward(self,x):
+        return self.layers(x)
+    
+class LayerNormalization(nn.Module):
+    def __init__(self,embeddingDimension):
+        super().__init__()
+        self.epsilon=1e-5
+        #trainable shift and scale parameters
+        self.scale = nn.Parameter(torch.ones(embeddingDimension))
+        self.shift = nn.Parameter(torch.zeros(embeddingDimension))
+    
+    def forward(self,x):
+        #calculate the normalized x
+        mean = x.mean(dim=-1,keepdim=True)
+        var = x.var(dim=-1,keepdim=True,unbiased=False)
+        normalizedX = (x-mean) / torch.sqrt(var+self.epsilon)
+        #scale and offset the normalized x with the trainable parameters
+        return self.scale * normalizedX + self.shift
+    
+class CausalSelfAttention (nn.Module):
+    def __init__(self, embeddingDimension, contextLength,attentionDropoutRate,qkvBias=False):
+        super().__init__()
+        self.embeddingDimension=embeddingDimension
+        self.wQuery = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.wKey = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.wValue = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.dropout = torch.nn.Dropout(attentionDropoutRate)
+        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))
 
 
     def forward(self, x:torch.Tensor):
@@ -36,30 +75,30 @@ class CausalSelfAttention (nn.Module):
         return contextVectors
 
 class MultiHeadCausalAttentionWrapper(torch.nn.Module):
-    def __init__(self,config):
+    def __init__(self,numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,qkvBias=False):
         super().__init__()
         self.heads = torch.nn.ModuleList(
-            [CausalSelfAttention(config) for _ in range(config[N_HEADS])]
+            [CausalSelfAttention(embeddingDimension, contextLength,attentionDropoutRate,qkvBias) for _ in range(numberOfHeads)]
         )
 
     def forward(self, x:torch.Tensor):
         return torch.cat([head(x) for head in self.heads],dim=-1)
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self,config):
+    def __init__(self,numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,qkvBias=False):
         super().__init__()
 
-        assert(config[EMBEDDING_DIMENSION] % config[N_HEADS] == 0), f"Output dimension must be divisable by the number of heads {config[EMBEDDING_DIMENSION]}/{config[N_HEADS]}"
+        assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
 
-        self.embeddingDimension=config[EMBEDDING_DIMENSION]
-        self.numberOfHeads = config[N_HEADS] 
-        self.headDimension = config[EMBEDDING_DIMENSION] // config[N_HEADS]
-        self.wQuery = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION],config[QKV_BIAS])
-        self.wKey = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION],config[QKV_BIAS])
-        self.wValue = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION],config[QKV_BIAS])
-        self.dropout = nn.Dropout(config[DROPOUT_ATTENTION_RATE])
-        self.outProjection = nn.Linear(config[EMBEDDING_DIMENSION],config[EMBEDDING_DIMENSION])        
-        self.register_buffer('mask', torch.triu(torch.ones(config[CONTEXT_LENGTH],config[CONTEXT_LENGTH]),diagonal=1))
+        self.embeddingDimension=embeddingDimension
+        self.numberOfHeads = numberOfHeads 
+        self.headDimension = embeddingDimension // numberOfHeads
+        self.wQuery = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.wKey = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.wValue = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.dropout = nn.Dropout(attentionDropoutRate)
+        self.outProjection = nn.Linear(embeddingDimension,embeddingDimension)        
+        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))
 
     def forward(self, x:torch.Tensor):
         #input data

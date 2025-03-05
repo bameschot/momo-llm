@@ -28,7 +28,7 @@ parser.add_argument("--inputFilePath", type=str, default="processed-data/process
 
 parser.add_argument("--initialLearningRate", type=float, default=0.00001, help="The initial learning rate that is used when warming up the model")
 parser.add_argument("--minimalLearningRate", type=float, default=0.0001, help="The lowest learning rate that the learning coefficient decay moves towards")
-parser.add_argument("--peakLearningRate", type=float, default=0.0001, help="The learning rate that the warmup increases towards")
+parser.add_argument("--peakLearningRate", type=float, default=0.0004, help="The learning rate that the warmup increases towards")
 parser.add_argument("--warmupSteps", type=int, default=200, help="The amount of steps that the training spends in the warmup phase")
 parser.add_argument("--weightDecay", type=float, default=0.1, help="The decay in weights used by the AdamW optimizer")
 

@@ -3,8 +3,7 @@ import torch.nn as nn
 
 from GPTModelConfig import *
 
-from Transformers import GPTTransformerBlock
-from LayerNormalization import LayerNormalization
+from Modules import LayerNormalization, FeedForward, MultiHeadAttention
 
 class GPTModel(nn.Module):
     def __init__(self,config):
@@ -56,4 +55,33 @@ class GPTModel(nn.Module):
         return sizeBytes / (1024 * 1024)
 
 
+class GPTTransformerBlock(nn.Module):
+    def __init__(self,config):
+        super().__init__()
+        self.attention = MultiHeadAttention(
+            config[N_HEADS], 
+            config[EMBEDDING_DIMENSION], 
+            config[CONTEXT_LENGTH],
+            config[DROPOUT_ATTENTION_RATE],
+            config[QKV_BIAS]
+        )
+        self.feedForward = FeedForward(embeddingDimension=config[EMBEDDING_DIMENSION])
+        self.normalizationLayer1 = LayerNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
+        self.normalizationLayer2 = LayerNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
+        self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
 
+    def forward(self,x):
+        shortcut = x
+        x = self.normalizationLayer1(x)
+        x = self.attention(x)
+        x = self.dropoutShortcut(x)
+        x = x + shortcut
+
+        shortcut = x
+        x = self.normalizationLayer2(x)
+        x = self.feedForward(x)
+        x = self.dropoutShortcut(x)
+        x = x + shortcut
+
+        return x
+    
