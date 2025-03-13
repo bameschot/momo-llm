@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from GPTModelConfig import *
 
-from Modules import LayerNormalization, FeedForward, MultiHeadAttention
+from Modules import LayerNormalization, FeedForward, MultiHeadAttention,MHAPyTorchScaledDotProduct
 
 class GPTModel(nn.Module):
     def __init__(self,config):

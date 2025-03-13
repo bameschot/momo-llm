@@ -134,3 +134,48 @@ class MultiHeadAttention(nn.Module):
 
         # adds a linear projection
         return self.outProjection(contextVectors)  
+
+#####
+#adapted from https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/02_bonus_efficient-multihead-attention/mha-implementations.ipynb
+#####
+class MHAPyTorchScaledDotProduct(nn.Module):
+    def __init__(self, numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,qkvBias=False):
+        super().__init__()
+
+        assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
+
+        self.numberOfHeads = numberOfHeads
+        self.context_length = contextLength
+        self.headDimension = embeddingDimension // numberOfHeads
+        self.embeddingDimension = embeddingDimension
+
+        self.qkv = nn.Linear(embeddingDimension, 3 * embeddingDimension, bias=qkvBias)
+        self.proj = nn.Linear(embeddingDimension, embeddingDimension)
+        self.dropout = attentionDropoutRate
+
+    def forward(self, x):
+        batchSize, numberOfTokens, embeddingDimension = x.shape
+
+        # (b, num_tokens, embed_dim) --> (b, num_tokens, 3 * embed_dim)
+        qkv = self.qkv(x)
+
+        # (b, num_tokens, 3 * embed_dim) --> (b, num_tokens, 3, num_heads, head_dim)
+        qkv = qkv.view(batchSize, numberOfTokens, 3, self.numberOfHeads, self.headDimension)
+
+        # (b, num_tokens, 3, num_heads, head_dim) --> (3, b, num_heads, num_tokens, head_dim)
+        qkv = qkv.permute(2, 0, 3, 1, 4)
+
+        # (3, b, num_heads, num_tokens, head_dim) -> 3 times (b, num_heads, num_tokens, head_dim)
+        queries, keys, values = qkv
+
+        useDropout = 0. if not self.training else self.dropout
+
+        contextVector = nn.functional.scaled_dot_product_attention(
+            queries, keys, values, attn_mask=None, dropout_p=useDropout, is_causal=True)
+
+        # Combine heads, where self.d_out = self.num_heads * self.head_dim
+        contextVector = contextVector.transpose(1, 2).contiguous().view(batchSize, numberOfTokens, self.embeddingDimension)
+
+        contextVector = self.proj(contextVector)
+
+        return contextVector

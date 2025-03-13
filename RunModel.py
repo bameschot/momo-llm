@@ -4,14 +4,12 @@ import argparse
 import torch
 import torch._dynamo
 
-from Preprocessing import GPT2Tokenizer
+from Data import GPT2Tokenizer
 from GenerateText import generateText,generateTextShift, textToTokens, tokensToText
 from GPTModel import GPTModel
 from GPTModelConfig import *
 from GPTModelStorage import *
 
-#Makes torch mps compiling work on MAC!
-torch._dynamo.config.suppress_errors = True
 
 ########################################
 #Parameters
@@ -26,6 +24,8 @@ parser.add_argument("--temperature",type=float, default=0.2,help="The temperatur
 parser.add_argument("--topK",type=int, default=5,help="The numper of most probable to pick the next token from, together with temperature this regulates variety in ouput")
 parser.add_argument("--printNextToken", action='store_true',help="Indicates if the each token should be printed as it is generated")
 parser.add_argument("--compileModel", action='store_true',help="Indicates if the model should be compiled first")
+parser.add_argument('--device', type=str, default=None, help= "indicates the device the model has to run on, if not provided the system autodetects in the order cuda->mps->cpu")
+
 args = parser.parse_args()
 
 p_modelname = args.modelname
@@ -35,17 +35,22 @@ p_temperature= args.temperature
 p_topK=args.topK
 p_printNextToken=args.printNextToken
 p_compileModel = args.compileModel
+p_device = args.device
+
 
 ########################################
 #Script
 ########################################
 
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-elif torch.mps.is_available():
-    device = torch.device("mps")
+if p_device is None:
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
 else:
-    device = torch.device("cpu")
+    device = torch.device(p_device)
 
 
 tokenizer = GPT2Tokenizer()
@@ -55,8 +60,12 @@ model = loadModel(
 )
 print(f"Model loaded: {p_modelname}, running on device {device}")
 
+print("compiling model")
 if p_compileModel:
-    model = torch.compile(model, mode="reduce-overhead",backend="aot_eager")
+    #required for mps compat
+    if torch.mps.is_available():
+        torch._dynamo.config.suppress_errors = True
+    model = torch.compile(model, mode="max-autotune")
 
 inputTokens = textToTokens(p_prompt,tokenizer).to(device)
 

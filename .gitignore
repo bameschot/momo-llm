@@ -172,6 +172,9 @@ cython_debug/
 
 #custom
 **/input-data/**
-**/processed-data/*.txt
+**/processed-data/**
+
 **/models/**
 **/loss-plot.pdf
+.DS_Store
+.DS_Store
