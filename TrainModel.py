@@ -2,6 +2,7 @@ import time
 import math
 import argparse
 import pickle
+import gzip
 
 import torch
 import torch.nn as nn
@@ -412,7 +413,7 @@ tokenizer = GPT2Tokenizer()
 numDataLoaderWorkers = 0
 
 if p_inputFileIsTokenized:
-    with open(p_inputFilePath, "rb") as f:
+    with gzip.open(p_inputFilePath, "rb") as f:
         data = pickle.load(f)
     print(f"Input data loaded: {p_inputFilePath}")
 else:

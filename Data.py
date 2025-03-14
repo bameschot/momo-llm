@@ -3,6 +3,7 @@ import os
 import tiktoken
 import glob
 import pickle
+import gzip
 
 from  torch.utils.data import Dataset, DataLoader
 from torch import torch
@@ -81,7 +82,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
 def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
 
-    with open(f'{processedOutputFileDir}/{processedOutputFileName}.bin','wb+') as joinedOutput:
+    with gzip.open(f'{processedOutputFileDir}/{processedOutputFileName}.bin','wb+') as joinedCompressedOutput:
         fileIdx = 0
         for inputFilePath in inputFilePaths: 
             if os.path.isdir(inputFilePath):
@@ -107,7 +108,7 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
                 #write the text to the joined output with the end of text technical token
                 #if fileIdx > 0:
                 #    joinedOutput.write(END_OF_TEXT_VOCAB_WORD)
-                pickle.dump(tokens,joinedOutput)
+                pickle.dump(tokens,joinedCompressedOutput)
                 
                 fileIdx+=1
 
