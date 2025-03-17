@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim
 
-from Data import GPT2Tokenizer, create_text_dataloader_v1,create_tokenized_dataloader_v1
+from Data import GPT2Tokenizer, create_tokenized_dataloader_v1,readInputFilePaths
 from GenerateText import generateText, textToTokens, tokensToText
 from GPTModel import GPTModel
 from GPTModelConfig import *
@@ -27,7 +27,6 @@ parser.add_argument("--modelName", type=str,default="TestEconomy_small_r", help=
 parser.add_argument('--newModel', action='store_false',help= "indicates if a new model should be trained, if not the model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with the same name")
 parser.add_argument("--trainingModelConfigName", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--inputFilePath", type=str, default="processed-data/processed-text.txt", help="The path from where the raw text input data is loaded")
-parser.add_argument("--inputFileIsTokenized", action='store_true',help="Indicates if the input file is tokenized with the gpt2 tokenizer")
 parser.add_argument("--batchSize", type=int, default=8, help="The batch size of the dataloader")
 
 parser.add_argument("--initialLearningRate", type=float, default=0.00001, help="The initial learning rate that is used when warming up the model")
@@ -40,7 +39,7 @@ parser.add_argument("--numberOfEpochs", type=int, default=10, help="The number o
 parser.add_argument("--evaluationStepFrequency", type=int, default=10, help="The interval in steps for calculating and printing training progress")
 parser.add_argument("--checkpointStepStorageFrequency", type=int, default=100, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
 parser.add_argument("--evaluationIterations", type=int, default=5, help="The number of evaluations that is used to calculate the average loss over")
-parser.add_argument("--startContext", type=str, default="What is a cat", help="The example context used to generate the epoch example output")
+parser.add_argument("--startContext", type=str, default="What is a cat ", help="The example context used to generate the epoch example output")
 parser.add_argument("--showLearningGraph", action='store_true',help="Indicates if the training loss and validation loss graph should be shown at the end of the training run")
 parser.add_argument("--trainRatio", type=float,default=0.9,help="The training / validation data ratio taken from the dataset")
 parser.add_argument('--compileModel', action='store_true',help= "indicates if a the model should be compiled")
@@ -51,7 +50,6 @@ args = parser.parse_args()
 
 print(args.newModel)
 p_inputFilePath = args.inputFilePath #"input-data/contribution-critique-political-economy.txt"
-p_inputFileIsTokenized = args.inputFileIsTokenized
 p_batchSize=args.batchSize
 p_trainRatio = args.trainRatio
 p_trainingConfigName = args.trainingModelConfigName
@@ -138,7 +136,7 @@ def trainModel(
         validationDataLoader, 
         device, 
         tokenizer,
-        loadModelFromCheckpoint=True,
+    loadModelFromCheckpoint=True,
         initialLearningRate=0.00001,
         minimalLearningRate = 0.0001,
         peakLearningRate=0.0004,
@@ -208,7 +206,7 @@ def trainModelMedium(
         evaluationStepFrequency = 10, 
         checkpointStepStorageFrequency = 100,
         evaluationIterations = 5,
-        startContext = "What is a cat"
+        startContext = "What is a cat "
         ):
     #set start data
     trainingLosses, validationLosses, trackTokensSeen = [],[],[]
@@ -282,6 +280,7 @@ def trainModelMedium(
         print(f"Epoch [{epoch}] processing time: {(endEpochTs-startEpochTs)} ms")
         #After each epoch print a sample of the model's output
         generateAndPrintSample(model,tokenizer,device,startContext)
+        
         ##after each epoch plot progress
         #epochs_tensor = torch.linspace(0, numberOfEpochs, len(trainingLosses))
         #plot_losses(epochs_tensor, tokensSeen, trainingLosses, validationLosses)
@@ -290,85 +289,9 @@ def trainModelMedium(
     storeModel(modelName,model)
     storeCheckPoint(modelName,model,optimizer)
     print(f"Storing model: {modelName}")
-    return trainingLosses, validationLosses, trackTokensSeen    
+    return trainingLosses, validationLosses, trackTokensSeen, learningRate    
 
-def trainModelSimple(
-        modelName,
-        model, 
-        trainingDataLoader, 
-        validationDataLoader, 
-        optimizer, 
-        device, 
-        tokenizer,
-        numberOfEpochs, 
-        evaluationFrequency, 
-        evaluationIterations,
-        checkpointStorageFrequency,
-        startContext
-        ):
-    #set start data
-    trainingLosses, validationLosses, trackTokensSeen = [],[],[]
-    tokensSeen, globalStep = -1,0
 
-    #iterate over the requested amount of epochs (complete batch runs)
-    for epoch in range(numberOfEpochs):
-        model.train(),
-        startEpochTs = time.time() * 1000.0
-
-        #iterate over the batches in steps
-        epochSteps=0
-        for inputBatch,targetBatch in trainingDataLoader:
-            epochSteps+=1
-            startTs = time.time() * 1000.0
-            #reset the loss gradients
-            optimizer.zero_grad()
-            #calculate the loss gradients for the batch
-            loss = calculationLossBatch(inputBatch,targetBatch,model,device)
-            #execute the backwards pass
-            loss.backward()
-            #update the model weights with the loss gradients
-            optimizer.step()
-            tokensSeen += inputBatch.numel()
-            globalStep +=1
-            
-            endTs = time.time() * 1000.0
-            timePerStep=(endTs-startTs)
-
-            #if the current step reaches the evaluation fequency
-            if(globalStep%evaluationFrequency==0):
-                #evaluate the model and get the training loss and validation loss
-                trainingLoss, validationLoss = evaluateModel(model,trainingDataLoader,validationDataLoader, device, evaluationIterations)
-                trainingLosses.append(trainingLoss)
-                validationLosses.append(validationLoss)
-
-                #print the current results
-                trackTokensSeen.append(tokensSeen)
-                print(f"Epoch: {epoch:02d} {(epochSteps/len(trainingDataLoader)*100):06.2f}%; (Step {globalStep:010d}): Training Loss {trainingLoss:.3f} Validation Loss {validationLoss:.3f} avg. Step processing time {timePerStep:.3f} ms")
-
-            #storage checkpoint interval
-            if checkpointStorageFrequency is not None and globalStep%checkpointStorageFrequency==0:
-                storeModel(modelName,model)
-                storeCheckPoint(modelName,model,optimizer)
-                print(f"Storing model: {modelName}")
-    
-        #end time of the epoch
-        endEpochTs = time.time() * 1000.0
-        print(f"Epoch [{epoch}] processing time: {(endEpochTs-startEpochTs)} ms")
-        #After each epoch print a sample of the model's output
-        generateAndPrintSample(model,tokenizer,device,startContext)
-        ##after each epoch plot progress
-        if p_showLearningGraph:
-            try:
-                epochs_tensor = torch.linspace(0, numberOfEpochs, len(trainingLosses))
-                plot_losses(epochs_tensor, tokensSeen, trainingLosses, validationLosses)
-            except:
-                pass
-
-    #after all epochs return the training losses and validation losses
-    storeModel(modelName,model)
-    storeCheckPoint(modelName,model,optimizer)
-    print(f"Storing model: {modelName}")
-    return trainingLosses, validationLosses, trackTokensSeen    
 
 def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses):
     fig, ax1 = plt.subplots(figsize=(5, 3))
@@ -390,6 +313,19 @@ def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses):
     plt.savefig("loss-plot.pdf")
     plt.show()
 
+
+def stepLearningRateForBatches(numFiles,peakLearningRate,minimalLearningRate):
+    
+    minimalLearningRates = []
+    peakLearningRates = []
+    learningRateStep = (peakLearningRate-minimalLearningRate) / numFiles
+
+    for idx in range(numFiles):
+        peakLearningRates.append(peakLearningRate-(learningRateStep*idx))
+        minimalLearningRates.append(peakLearningRates[idx]-learningRateStep)
+    
+    return minimalLearningRates, peakLearningRates
+
 ########################################
 #Script
 ########################################
@@ -408,27 +344,31 @@ trainingConfig = modelConfigs[p_trainingConfigName]
 
 
 tokenizer = GPT2Tokenizer()
-
-
 numDataLoaderWorkers = 0
 
-if p_inputFileIsTokenized:
-    with gzip.open(p_inputFilePath, "rb") as f:
+inputPaths = readInputFilePaths(p_inputFilePath)
+print (f"Selected training files: {inputPaths}")
+
+dataFileProcessedIdx = 0
+trainingLosses, validationLosses, tokensSeen = [],[],[]
+minimalLearningRates, peakLearningRates = stepLearningRateForBatches(len(inputPaths),p_peakLearningRate,p_minimalLearningRate)
+
+for inputPath in inputPaths:
+
+    print (f"Loading input: {inputPath}")
+
+    #load and uncompress the datafiles, then extract the tokens
+    with gzip.open(inputPath, "rb") as f:
         data = pickle.load(f)
-    print(f"Input data loaded: {p_inputFilePath}")
-else:
-    with open(p_inputFilePath, "r", encoding="utf-8") as f:
-        data = f.read()
-    print(f"Input data loaded: {p_inputFilePath}")
+    print(f"Input data loaded: {inputPath}")
 
+    totalTokens = len(data)
+    print (f"dataset total tokens: {totalTokens}")
+    splitIdx = int(p_trainRatio * totalTokens)
+    trainingData = data[:splitIdx]
+    validationData = data[splitIdx:]
 
-totalCharacters = len(data)
-splitIdx = int(p_trainRatio * totalCharacters)
-trainingData = data[:splitIdx]
-validationData = data[splitIdx:]
-
-
-if p_inputFileIsTokenized:
+    #create the dataloaders for the input file
     trainingDataLoader = create_tokenized_dataloader_v1(
         tokens=trainingData,
         tokenizer=tokenizer,
@@ -447,50 +387,41 @@ if p_inputFileIsTokenized:
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
-else:    
-    trainingDataLoader = create_text_dataloader_v1(
-        txt=trainingData,
-        tokenizer=tokenizer,
-        batch_size=p_batchSize,
-        max_length=trainingConfig[CONTEXT_LENGTH],
-        stride=trainingConfig[CONTEXT_LENGTH],
-        drop_last=True,
-        num_workers=numDataLoaderWorkers
-    )
-    validationDataLoader = create_text_dataloader_v1(
-        txt=validationData,
-        tokenizer=tokenizer,
-        batch_size=p_batchSize,
-        max_length=trainingConfig[CONTEXT_LENGTH],
-        stride=trainingConfig[CONTEXT_LENGTH],
-        drop_last=True,
-        num_workers=numDataLoaderWorkers
-    )
 
-print("\nStart training")
-print(p_loadModelFromCheckpoint)
-trainingLosses, validationLosses, tokensSeen = trainModel(
-    modelName=p_modelName,
-    modelConfig=trainingConfig,
-    loadModelFromCheckpoint=p_loadModelFromCheckpoint,
-    trainingDataLoader=trainingDataLoader,
-    validationDataLoader=validationDataLoader,
-    tokenizer=tokenizer,
-    initialLearningRate=p_initialLearningRate,
-    minimalLearningRate =p_minimalLearningRate,
-    peakLearningRate=p_peakLearningRate,
-    warmupSteps=p_warmupSteps,    
-    weightDecay=p_weightDecay,
-    device=device,
-    numberOfEpochs=p_numberOfEpochs,
-    evaluationStepFrequency=p_evaluationStepFrequency,
-    checkpointStepStorageFrequency=p_checkpointStepStorageFrequency,
-    evaluationIterations=p_evaluationIterations,
-    startContext=p_startContext,
-    compileModel=p_compileModel
-)
+    #start the training loop in this datafile , for the first loop check the parameter if a new model is needed and set the intial peak learning rate
+    loadModelFromCheckpoint = True
+    if dataFileProcessedIdx == 0:
+        loadModelFromCheckpoint = p_loadModelFromCheckpoint
+
+    print(f"\nStart training for {inputPath} with peak learning rate: {p_peakLearningRate}")
+    runTrainingLosses, runValidationLosses, runTokensSeen, learningRate = trainModel(
+        modelName=p_modelName,
+        modelConfig=trainingConfig,
+        loadModelFromCheckpoint=loadModelFromCheckpoint,
+        trainingDataLoader=trainingDataLoader,
+        validationDataLoader=validationDataLoader,
+        tokenizer=tokenizer,
+        initialLearningRate=p_initialLearningRate,
+        minimalLearningRate =minimalLearningRates[dataFileProcessedIdx],
+        peakLearningRate=peakLearningRates[dataFileProcessedIdx],
+        warmupSteps=p_warmupSteps,    
+        weightDecay=p_weightDecay,
+        device=device,
+        numberOfEpochs=p_numberOfEpochs,
+        evaluationStepFrequency=p_evaluationStepFrequency,
+        checkpointStepStorageFrequency=p_checkpointStepStorageFrequency,
+        evaluationIterations=p_evaluationIterations,
+        startContext=p_startContext,
+        compileModel=p_compileModel
+    )
+    dataFileProcessedIdx += 1
+    tokensSeen.extend(runTokensSeen)
+    trainingLosses.extend(runTrainingLosses)
+    validationLosses.extend(runValidationLosses)
+    
 
 if p_showLearningGraph:
     epochs_tensor = torch.linspace(0, p_numberOfEpochs, len(trainingLosses))
     plot_losses(epochs_tensor, tokensSeen, trainingLosses, validationLosses)
+
 

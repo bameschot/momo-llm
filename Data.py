@@ -5,6 +5,8 @@ import glob
 import pickle
 import gzip
 
+from pathlib import Path
+
 from  torch.utils.data import Dataset, DataLoader
 from torch import torch
 
@@ -79,42 +81,64 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
     vocabulary = {token:integer for integer,token in enumerate(sorted(rawVocabulary))}
     return vocabulary
 
-def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer): 
+def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=500): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
+    Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
 
-    with gzip.open(f'{processedOutputFileDir}/{processedOutputFileName}.bin','wb+') as joinedCompressedOutput:
-        fileIdx = 0
-        for inputFilePath in inputFilePaths: 
-            if os.path.isdir(inputFilePath):
-                continue
 
-            print(f'Reading {inputFilePath}')
-            with open(inputFilePath,"r",encoding = "utf-8") as input:
-                text = ""
-                
-                #read the whole file in one go to avoid ugly midsentence/word breaks
-                while True: 
-                    line = input.readline()
-                    if line == '':
-                        break
-                    text += " "
-                    text += line.strip()
+    tokenListCutoff = partSizeMb*1048576/4 #int
+    fileIdx = 0
+    outputFileIndex = 0
+    tokens = []
+    for inputFilePath in inputFilePaths: 
+        if os.path.isdir(inputFilePath):
+            continue
 
-                print(f"{inputFilePath} text size: {len(text)}")
-                
-                #split text into tokens
-                tokens = tokenizer.encode(text)
+        print(f'Reading {inputFilePath}')
+        with open(inputFilePath,"r",encoding = "utf-8") as input:
+            text = ""
+            
+            #read the whole file in one go to avoid ugly midsentence/word breaks
+            while True: 
+                line = input.readline()
+                if line == '':
+                    break
+                text += " "
+                text += line.strip()
 
-                #write the text to the joined output with the end of text technical token
-                #if fileIdx > 0:
-                #    joinedOutput.write(END_OF_TEXT_VOCAB_WORD)
-                pickle.dump(tokens,joinedCompressedOutput)
-                
-                fileIdx+=1
+            
+            #split text into tokens
+            tokens.extend(tokenizer.encode(text))
+            print(f"{inputFilePath} tokensSize: {len(tokens)} / {tokenListCutoff}")
+            del text
 
-    #Add the technical tokens to the end vocabulary
+            #write the text to the joined output with the end of text technical token
+            #if fileIdx > 0:
+            #    joinedOutput.write(END_OF_TEXT_VOCAB_WORD)
+            
+            fileIdx+=1
+
+        #if the token list exceeds the cutoff point write it to a batch file
+        if(len(tokens) > tokenListCutoff):
+            outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex}.bin'
+            picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
+            print(f"Writing processed output file: {outputPath}")
+            outputFileIndex = outputFileIndex+1
+            tokens.clear()
+    
+    #write the remainder of the tokens to the file
+    outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex}.bin'
+    picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
+    print(f"Writing final processed output file: {outputPath}")
+    
     vocabulary = {}
     return vocabulary
+
+def picleTokenListToGzipBin(tokens,filePath):
+    with gzip.open(filePath,'wb+') as joinedCompressedOutput:
+        #Add the technical tokens to the end vocabulary
+        print(f"Writing pickle for {len(tokens)} to {filePath}")
+        pickle.dump(tokens,joinedCompressedOutput)
 
 def splitAndStripTextIntoTokens(text):
     #split on the token regex
