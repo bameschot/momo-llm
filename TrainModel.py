@@ -169,7 +169,7 @@ def trainModel(
         if torch.mps.is_available():
             torch._dynamo.config.suppress_errors = True
         torch.set_float32_matmul_precision('high')
-        model = torch.compile(model,mode="max-autotune")
+        model = torch.compile(model)#,mode="max-autotune")
     
     print(f"Training model on {device}")
 
