@@ -3,6 +3,7 @@ import math
 import argparse
 import pickle
 import gzip
+import random
 
 import torch
 import torch.nn as nn
@@ -37,8 +38,8 @@ parser.add_argument("--warmupSteps", type=int, default=200, help="The amount of 
 parser.add_argument("--weightDecay", type=float, default=0.1, help="The decay in weights used by the AdamW optimizer")
 
 parser.add_argument("--numberOfEpochs", type=int, default=10, help="The number of epochs (complete dataset passes) to train for")
-parser.add_argument("--evaluationStepFrequency", type=int, default=10, help="The interval in steps for calculating and printing training progress")
-parser.add_argument("--checkpointStepStorageFrequency", type=int, default=100, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
+parser.add_argument("--evaluationStepFrequency", type=int, default=50, help="The interval in steps for calculating and printing training progress")
+parser.add_argument("--checkpointStepStorageFrequency", type=int, default=250, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
 parser.add_argument("--evaluationIterations", type=int, default=5, help="The number of evaluations that is used to calculate the average loss over")
 parser.add_argument("--startContext", type=str, default="What is a cat ", help="The example context used to generate the epoch example output")
 parser.add_argument("--showLearningGraph", action='store_true',help="Indicates if the training loss and validation loss graph should be shown at the end of the training run")
@@ -349,6 +350,7 @@ tokenizer = GPT2Tokenizer()
 numDataLoaderWorkers = 0
 
 inputPaths = readInputFilePaths(p_inputFilePath)
+random.shuffle(inputPaths)
 print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0
