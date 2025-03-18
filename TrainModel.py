@@ -28,6 +28,7 @@ parser.add_argument('--newModel', action='store_false',help= "indicates if a new
 parser.add_argument("--trainingModelConfigName", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--inputFilePath", type=str, default="processed-data/processed-text.txt", help="The path from where the raw text input data is loaded")
 parser.add_argument("--batchSize", type=int, default=8, help="The batch size of the dataloader")
+parser.add_argument("--stride", type=int, default=None, help="The stride of the dataloader")
 
 parser.add_argument("--initialLearningRate", type=float, default=0.00001, help="The initial learning rate that is used when warming up the model")
 parser.add_argument("--minimalLearningRate", type=float, default=0.0001, help="The lowest learning rate that the learning coefficient decay moves towards")
@@ -51,6 +52,7 @@ args = parser.parse_args()
 print(args.newModel)
 p_inputFilePath = args.inputFilePath #"input-data/contribution-critique-political-economy.txt"
 p_batchSize=args.batchSize
+p_stride = args.stride
 p_trainRatio = args.trainRatio
 p_trainingConfigName = args.trainingModelConfigName
 p_modelName=args.modelName
@@ -369,12 +371,13 @@ for inputPath in inputPaths:
     validationData = data[splitIdx:]
 
     #create the dataloaders for the input file
+    dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]    
     trainingDataLoader = create_tokenized_dataloader_v1(
         tokens=trainingData,
         tokenizer=tokenizer,
         batch_size=p_batchSize,
         max_length=trainingConfig[CONTEXT_LENGTH],
-        stride=trainingConfig[CONTEXT_LENGTH],
+        stride=dlStride,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
@@ -383,10 +386,12 @@ for inputPath in inputPaths:
         tokenizer=tokenizer,
         batch_size=p_batchSize,
         max_length=trainingConfig[CONTEXT_LENGTH],
-        stride=trainingConfig[CONTEXT_LENGTH],
+        stride=dlStride,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
+
+    print(f"Dataloader config: batch size {p_batchSize} with stride {dlStride}")
 
     #start the training loop in this datafile , for the first loop check the parameter if a new model is needed and set the intial peak learning rate
     loadModelFromCheckpoint = True
