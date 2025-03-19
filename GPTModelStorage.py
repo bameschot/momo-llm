@@ -1,4 +1,5 @@
 from pathlib import Path
+from collections import OrderedDict
 
 import torch
 
@@ -7,13 +8,17 @@ from GPTModel import GPTModel
 
 MODEL_FOLDER = "./models"
 
-def storeCheckPoint(modelName,model,optimizer):
+def storeCheckPoint(modelName,model,optimizer,isCompiled=False):
     Path(f"{MODEL_FOLDER}/{modelName}").mkdir(parents=True, exist_ok=True)
+    
+    modelStateDict = repairCompiledStateDict(model.state_dict()) if isCompiled else model.state_dict()
+    optimizerStateDict = repairCompiledStateDict(optimizer.state_dict()) if isCompiled else optimizer.state_dict()
+
     torch.save(
         {
             "ModelConfig": model.config,
-            "ModelStateDict": model.state_dict(),
-            "OptimizerStateDict": optimizer.state_dict()
+            "ModelStateDict": modelStateDict,
+            "OptimizerStateDict": optimizerStateDict
         },
         f"{MODEL_FOLDER}/{modelName}/{modelName}.pth"
     )
@@ -28,12 +33,15 @@ def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
     optimizer.load_state_dict(modelData["OptimizerStateDict"])
     return model, optimizer
 
-def storeModel(modelName,model):
+def storeModel(modelName,model,isCompiled=False):
     Path(f"{MODEL_FOLDER}/{modelName}").mkdir(parents=True, exist_ok=True)
+
+    modelStateDict = repairCompiledStateDict(model.state_dict()) if isCompiled else model.state_dict()
+
     torch.save(
         {
             "ModelConfig": model.config,
-            "ModelStateDict": model.state_dict()
+            "ModelStateDict": modelStateDict
         },
         f"{MODEL_FOLDER}/{modelName}/{modelName}.model"
     )
@@ -45,3 +53,14 @@ def loadModel(modelName,device):
     model.load_state_dict(modelData["ModelStateDict"])
     model.eval()
     return model
+
+
+#turns the keys of state dicts for compiled models to the keys for non-compiled models 
+#based on https://github.com/pytorch/pytorch/issues/101107#issuecomment-1542688089
+def repairCompiledStateDict(stateDict):
+    repairedDict = OrderedDict()
+    for k,v in stateDict.items():
+        newEntry = k.replace("_orig_mod.","")
+        print(f"Entry: {k} -> {newEntry}")
+        repairedDict[newEntry] = v
+    return repairedDict

@@ -38,8 +38,8 @@ parser.add_argument("--warmupSteps", type=int, default=200, help="The amount of 
 parser.add_argument("--weightDecay", type=float, default=0.1, help="The decay in weights used by the AdamW optimizer")
 
 parser.add_argument("--numberOfEpochs", type=int, default=10, help="The number of epochs (complete dataset passes) to train for")
-parser.add_argument("--evaluationStepFrequency", type=int, default=50, help="The interval in steps for calculating and printing training progress")
-parser.add_argument("--checkpointStepStorageFrequency", type=int, default=250, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
+parser.add_argument("--evaluationStepFrequency", type=int, default=10, help="The interval in steps for calculating and printing training progress")
+parser.add_argument("--checkpointStepStorageFrequency", type=int, default=50, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
 parser.add_argument("--evaluationIterations", type=int, default=5, help="The number of evaluations that is used to calculate the average loss over")
 parser.add_argument("--startContext", type=str, default="What is a cat ", help="The example context used to generate the epoch example output")
 parser.add_argument("--showLearningGraph", action='store_true',help="Indicates if the training loss and validation loss graph should be shown at the end of the training run")
@@ -190,7 +190,8 @@ def trainModel(
         peakLearningRate=peakLearningRate,
         warmupSteps=warmupSteps,
         startContext=startContext,
-        tokenizer=tokenizer
+        tokenizer=tokenizer,
+        isCompiled=compileModel
     )
 
 def trainModelMedium(
@@ -209,7 +210,8 @@ def trainModelMedium(
         evaluationStepFrequency = 10, 
         checkpointStepStorageFrequency = 100,
         evaluationIterations = 5,
-        startContext = "What is a cat "
+        startContext = "What is a cat ",
+        isCompiled=False
         ):
     #set start data
     trainingLosses, validationLosses, trackTokensSeen = [],[],[]
@@ -274,8 +276,8 @@ def trainModelMedium(
 
             #storage checkpoint interval
             if checkpointStepStorageFrequency is not None and globalStep%checkpointStepStorageFrequency==0:
-                storeModel(modelName,model)
-                storeCheckPoint(modelName,model,optimizer)
+                storeModel(modelName,model,isCompiled)
+                storeCheckPoint(modelName,model,optimizer,isCompiled)
                 print(f"Storing model: {modelName}")
     
         #end time of the epoch
@@ -289,8 +291,8 @@ def trainModelMedium(
         #plot_losses(epochs_tensor, tokensSeen, trainingLosses, validationLosses)
 
     #after all epochs return the training losses and validation losses
-    storeModel(modelName,model)
-    storeCheckPoint(modelName,model,optimizer)
+    storeModel(modelName,model,isCompiled)
+    storeCheckPoint(modelName,model,optimizer,isCompiled)
     print(f"Storing model: {modelName}")
     return trainingLosses, validationLosses, trackTokensSeen, learningRate    
 
