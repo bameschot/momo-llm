@@ -9,7 +9,8 @@ import torch
 import torch.nn as nn
 import torch.optim
 
-from Data import GPT2Tokenizer, create_tokenized_dataloader_v1,readInputFilePaths
+from Tokenizers import *
+from Data import create_tokenized_dataloader_v1,readInputFilePaths
 from GenerateText import generateText, textToTokens, tokensToText
 from GPTModel import GPTModel
 from GPTModelConfig import *
@@ -347,10 +348,9 @@ else:
 
 trainingConfig = modelConfigs[p_trainingConfigName]
 
+tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
 
-tokenizer = GPT2Tokenizer()
 numDataLoaderWorkers = 0
-
 inputPaths = readInputFilePaths(p_inputFilePath)
 random.shuffle(inputPaths)
 print (f"Selected training files: {inputPaths}")

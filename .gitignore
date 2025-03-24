@@ -173,6 +173,7 @@ cython_debug/
 #custom
 **/input-data/**
 **/processed-data/**
+**/vocabulary/**
 
 **/models/**
 **/loss-plot.pdf

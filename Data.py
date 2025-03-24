@@ -1,13 +1,14 @@
-import re
 import os
-import tiktoken
 import glob
 import pickle
 import gzip
-
 from pathlib import Path
 
-from  torch.utils.data import Dataset, DataLoader
+from Tokenizers import *
+
+import sentencepiece
+
+from torch.utils.data import Dataset, DataLoader
 from torch import torch
 
 TOKENIZER_INPUT_DATA_DIRECTORY = "./input-data"
@@ -17,12 +18,8 @@ TOKENIZER_PROCESSED_DATA_DIRECTORY = "./processed-data"
 PROCESSED_TXT_OUTPUT_FILE_NAME = "./processed-text.txt"
 PROCESSED_BIN_OUTPUT_FILE_NAME = "./processed-text.bin"
 
-TOKENIZE_INTERPUNCTION_REGEX= r'\s+([,.:;?_!"()\'])'
-TOKENIZE_REGEX = r'([,.:;?_!"()\']|--|\s)'
 TOKENIZED_READ_BUFFER_SIZE = 1024*1024*5 #5mb
 
-UKNOWN_VOCAB_WORD = "<|unk|>"
-END_OF_TEXT_VOCAB_WORD = "<|endoftext|>"
 
 def readInputFilePaths(directory=TOKENIZER_INPUT_DATA_DIRECTORY,globPattern='/**/*.*'):
     files = glob.glob(directory + globPattern, recursive=True)
@@ -41,8 +38,34 @@ def tokenizeProcessedDataFile(tokenizer,directory=TOKENIZER_PROCESSED_DATA_DIREC
             text = f.read(bufferSize)
         return tokens
 
-def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName): 
+def trainSentencePieceTokenizer(inputFilePaths, processedOutputFileDir=TOKENIZER_VOCABULARY_DIRECTORY,processedOutputFileName="vocab-training.txt",vocabSize=8008,vocabularyName="sp",newTrainingFile=True):
+    foup = f"{processedOutputFileDir}/{processedOutputFileName}.txt"
+    if not os.path.isfile(foup) or newTrainingFile:
+        print("Starting a new tokenize training file")
+        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,maintainLineBreaks=True)
+
+    fullModelName = f"{vocabularyName}{vocabSize}"
+    modelDir = f"{processedOutputFileDir}/{fullModelName}"
+    Path(f"{modelDir}").mkdir(parents=True, exist_ok=True)
+
+    sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}.txt',
+                                model_prefix=f'{modelDir}/{fullModelName}',
+                                model_type="bpe",
+                                vocab_size=vocabSize,
+                                self_test_sample_size=0,
+                                input_format="text",
+                                character_coverage=0.9995,
+                                num_threads=os.cpu_count(),
+                                split_digits=True,
+                                allow_whitespace_only_pieces=True,
+                                byte_fallback=True,
+                                unk_surface=r" \342\201\207 ",
+                                normalization_rule_name="identity",
+                                max_sentence_length=100000)    
+
+def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False): 
     print(f'Creating a vocabulary for files: {inputFilePaths}')
+    Path(f"{processedOutputFileDir}").mkdir(parents=True, exist_ok=True)
 
     rawVocabulary = set()
     with open(f'{processedOutputFileDir}/{processedOutputFileName}.txt','w+',encoding = "utf-8") as joinedOutput:
@@ -62,6 +85,8 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
                         break
                     text += " "
                     text += line.strip()
+                    if maintainLineBreaks:
+                        text+='\n'
 
                 print(f"{inputFilePath} text size: {len(text)}")
                 
@@ -139,39 +164,6 @@ def picleTokenListToGzipBin(tokens,filePath):
         #Add the technical tokens to the end vocabulary
         print(f"Writing pickle for {len(tokens)} to {filePath}")
         pickle.dump(tokens,joinedCompressedOutput)
-
-def splitAndStripTextIntoTokens(text):
-    #split on the token regex
-    rawTokens = re.split(TOKENIZE_REGEX,text)
-    return [rawToken.strip() for rawToken in rawTokens if rawToken.strip()]
-                    
-class SimpleTokenizerV2:
-    def __init__(self,vocab):
-        self.word_to_id = vocab
-        self.id_to_word = {i:s for s,i in vocab.items()}
-
-    def encode(self,text):
-        return [ self.word_to_id[w]if w in self.word_to_id else self.word_to_id[UKNOWN_VOCAB_WORD] for w in splitAndStripTextIntoTokens(text)]
-    
-    def decode(self,ids):
-        return re.sub(TOKENIZE_INTERPUNCTION_REGEX,r'\1'," ".join([self.id_to_word[i] for i in ids]))
-    
-    def vocabSize(self):
-        return len(self.word_to_id)
-
-class GPT2Tokenizer:
-    def __init__(self):
-        self.tokenizer = tiktoken.get_encoding('gpt2')
-
-    def encode(self,text):
-        return self.tokenizer.encode(text=text,allowed_special={END_OF_TEXT_VOCAB_WORD})
-    
-    def decode(self,ids):
-        return self.tokenizer.decode(ids)
-    
-    def vocabSize(self):
-        return 50257 #hardcoded for tiktoken gpt2
-
 
 class GPTDatasetV2(Dataset):
     def __init__(self,text, tokenizer, maxLength, stride):
