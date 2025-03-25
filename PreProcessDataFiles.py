@@ -1,6 +1,7 @@
 import argparse
 
 from Data import *
+from GPTModelConfig import *
 
 ########################################
 #Parameters
@@ -9,6 +10,7 @@ parser = argparse.ArgumentParser(
         description="Preprocesses GPT Data files"
     )
 parser.add_argument("--inputDirectory", type=str,default=TOKENIZER_INPUT_DATA_DIRECTORY, help="The base directory from where to load the data")
+parser.add_argument("--modelConfig", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--globPattern", type=str,default="**/**", help="The glob pattern that determines the file to load data fromfrom the base directory")
 parser.add_argument("--outputDirectory", type=str,default=TOKENIZER_PROCESSED_DATA_DIRECTORY, help="The base directory to write the output from")
 parser.add_argument("--outputFileName", type=str,default="processed-text-full-wiki", help="the file name of the processed file")
@@ -24,6 +26,7 @@ p_globPattern = args.globPattern
 p_outputDirectory = args.outputDirectory
 p_outputFileName = args.outputFileName
 p_outputBatchSizeMb = args.outputBatchSizeMb
+p_modelConfig=args.modelConfig
 
 p_newFile = args.newOutputFile
 p_isTokenized = args.isTokenized
@@ -32,7 +35,9 @@ p_isTokenized = args.isTokenized
 
 print(f"start preprocessing: {p_inputDirectory}/{p_globPattern}")
 if p_isTokenized:
-    preprocessInputDataAsTokens(readInputFilePaths(p_inputDirectory,p_globPattern),p_outputDirectory,p_outputFileName,GPT2Tokenizer(),p_outputBatchSizeMb)
+    trainingConfig = modelConfigs[p_modelConfig]
+    tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
+    preprocessInputDataAsTokens(readInputFilePaths(p_inputDirectory,p_globPattern),p_outputDirectory,p_outputFileName,tokenizer,p_outputBatchSizeMb)
 else:
     vocab = preprocessInputDataAsText(readInputFilePaths(p_inputDirectory,p_globPattern),p_outputDirectory,p_outputFileName)
     print(f"vocab size {len(vocab)}")
