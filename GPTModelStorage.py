@@ -26,6 +26,10 @@ def storeCheckPoint(modelName,model,optimizer,isCompiled=False):
 def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
     modelData = torch.load(f"{MODEL_FOLDER}/{modelName}/{modelName}.pth",device)
     config = modelData["ModelConfig"]
+    
+    #this sets the default data type for all future operations based on config
+    torch.set_default_dtype(config[DEFAULT_DATA_TYPE])
+
     model = GPTModel(config).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
     model.train()
@@ -49,6 +53,10 @@ def storeModel(modelName,model,isCompiled=False):
 def loadModel(modelName,device):
     modelData = torch.load(f"{MODEL_FOLDER}/{modelName}/{modelName}.model",device)
     config = modelData["ModelConfig"]
+
+    #this sets the default data type for all future operations based on config
+    torch.set_default_dtype(config[DEFAULT_DATA_TYPE])
+
     model = GPTModel(config).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
     model.eval()

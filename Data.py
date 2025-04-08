@@ -22,7 +22,11 @@ TOKENIZED_READ_BUFFER_SIZE = 1024*1024*5 #5mb
 
 
 def readInputFilePaths(directory=TOKENIZER_INPUT_DATA_DIRECTORY,globPattern='/**/*.*'):
-    files = glob.glob(directory + globPattern, recursive=True)
+    print(f"Finding files for pattern: {directory + globPattern}")
+    patterns = globPattern.split("|")
+    files = []
+    for pattern in patterns:
+        files.extend(glob.glob(directory + pattern, recursive=True)) 
     return files
 
 def readProcessedDataFile(directory=TOKENIZER_PROCESSED_DATA_DIRECTORY):
@@ -210,19 +214,20 @@ class GPTDatasetV1(Dataset):
         return self.input_ids[idx], self.target_ids[idx]
 
 class GPTTokenizedDatasetV1(Dataset):
-    def __init__(self, tokens, max_length, stride):
+    def __init__(self, tokens, max_length, stride,device):
         self.input_ids = []
         self.target_ids = []
 
-        # Tokenize the entire text
-        token_ids = tokens
-
         # Use a sliding window to chunk the book into overlapping sequences of max_length
-        for i in range(0, len(token_ids) - max_length, stride):
-            input_chunk = token_ids[i:i + max_length]
-            target_chunk = token_ids[i + 1: i + max_length + 1]
-            self.input_ids.append(torch.tensor(input_chunk))
-            self.target_ids.append(torch.tensor(target_chunk))
+        for i in range(0, len(tokens) - max_length, stride):
+            input_chunk = tokens[i:i + max_length]
+            target_chunk = tokens[i + 1: i + max_length + 1]
+            if(device != None):
+                self.input_ids.append(torch.tensor(input_chunk).to(device))
+                self.target_ids.append(torch.tensor(target_chunk).to(device))
+            else:
+                self.input_ids.append(torch.tensor(input_chunk))
+                self.target_ids.append(torch.tensor(target_chunk))
 
     def __len__(self):
         return len(self.input_ids)
@@ -242,10 +247,10 @@ def create_text_dataloader_v1(txt,tokenizer ,batch_size, max_length, stride,
 
     return dataloader
 
-def create_tokenized_dataloader_v1(tokens,tokenizer ,batch_size, max_length, stride,
+def create_tokenized_dataloader_v1(tokens,tokenizer ,batch_size, max_length, stride,device,
                          shuffle=True, drop_last=True, num_workers=0):
     # Create dataset
-    dataset = GPTTokenizedDatasetV1(tokens, max_length, stride)
+    dataset = GPTTokenizedDatasetV1(tokens, max_length, stride,device)
 
     # Create dataloader
     dataloader = DataLoader(
@@ -263,4 +268,3 @@ def createDataLoaderV1(tokenizer, text,numWorkers=0, batchSize=4,maxLength=256,s
         drop_last=dropLast,
         num_workers=numWorkers
     )
-    

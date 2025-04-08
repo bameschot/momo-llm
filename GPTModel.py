@@ -51,8 +51,8 @@ class GPTModel(nn.Module):
         return sum(p.numel() for p in self.parameters())
     
     def memSizeMb(self):
-        sizeBytes = self.numberOfParameters() * 4 #assumes float32
-        return sizeBytes / (1024 * 1024)
+        sizeBytes = self.numberOfParameters() * 2 #assumes float6 or bfloat16
+        return round(sizeBytes / (1024 * 1024),2)
 
 
 class GPTTransformerBlock(nn.Module):

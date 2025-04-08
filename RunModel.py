@@ -63,7 +63,7 @@ model = loadModel(
 
 tokenizer = initializeTokenizer(model.config[TOKENIZER_TYPE],model.config[TOKENIZER_NAME])
 
-print(f"Model loaded: {p_modelname}, running on device {device}")
+print(f"Model loaded: {p_modelname}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
 
 print("compiling model")
 if p_compileModel:

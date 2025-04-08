@@ -4,6 +4,7 @@ import argparse
 import pickle
 import gzip
 import random
+import gc
 
 import torch
 import torch.nn as nn
@@ -29,23 +30,23 @@ parser.add_argument("--modelName", type=str,default="TestEconomy_small_r", help=
 parser.add_argument('--newModel', action='store_false',help= "indicates if a new model should be trained, if not the model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with the same name")
 parser.add_argument("--trainingModelConfigName", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--inputFilePath", type=str, default="processed-data/processed-text.txt", help="The path from where the raw text input data is loaded")
-parser.add_argument("--batchSize", type=int, default=8, help="The batch size of the dataloader")
+parser.add_argument("--batchSize", type=int, default=40, help="The batch size of the dataloader")
 parser.add_argument("--stride", type=int, default=None, help="The stride of the dataloader")
 
-parser.add_argument("--initialLearningRate", type=float, default=0.00001, help="The initial learning rate that is used when warming up the model")
 parser.add_argument("--minimalLearningRate", type=float, default=0.0001, help="The lowest learning rate that the learning coefficient decay moves towards")
 parser.add_argument("--peakLearningRate", type=float, default=0.0004, help="The learning rate that the warmup increases towards")
-parser.add_argument("--warmupSteps", type=int, default=200, help="The amount of steps that the training spends in the warmup phase")
+parser.add_argument("--warmupSteps", type=int, default=1000, help="The amount of steps that the training spends in the warmup phase")
 parser.add_argument("--weightDecay", type=float, default=0.1, help="The decay in weights used by the AdamW optimizer")
 
 parser.add_argument("--numberOfEpochs", type=int, default=10, help="The number of epochs (complete dataset passes) to train for")
-parser.add_argument("--evaluationStepFrequency", type=int, default=10, help="The interval in steps for calculating and printing training progress")
-parser.add_argument("--checkpointStepStorageFrequency", type=int, default=50, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
-parser.add_argument("--evaluationIterations", type=int, default=5, help="The number of evaluations that is used to calculate the average loss over")
+parser.add_argument("--evaluationStepFrequency", type=int, default=200, help="The interval in steps for calculating and printing training progress")
+parser.add_argument("--checkpointStepStorageFrequency", type=int, default=1000, help="The interval in steps for storing the <model-name>.pth and <model-name>.model subresults")
+parser.add_argument("--evaluationIterations", type=int, default=10, help="The number of evaluations that is used to calculate the average loss over")
 parser.add_argument("--startContext", type=str, default="What is a cat ", help="The example context used to generate the epoch example output")
 parser.add_argument("--showLearningGraph", action='store_true',help="Indicates if the training loss and validation loss graph should be shown at the end of the training run")
 parser.add_argument("--trainRatio", type=float,default=0.9,help="The training / validation data ratio taken from the dataset")
 parser.add_argument('--compileModel', action='store_true',help= "indicates if a the model should be compiled")
+parser.add_argument('--moveDatasetToDevice', action='store_true',help= "indicates if the dataloaders should move all their data to the device, helps memory pressure on mps type devices")
 parser.add_argument('--device', type=str, default=None, help= "indicates the device the model has to run on, if not provided the system autodetects in the order cuda->mps->cpu")
 
 
@@ -59,7 +60,6 @@ p_trainRatio = args.trainRatio
 p_trainingConfigName = args.trainingModelConfigName
 p_modelName=args.modelName
 p_loadModelFromCheckpoint=args.newModel
-p_initialLearningRate=args.initialLearningRate
 p_minimalLearningRate =args.minimalLearningRate
 p_peakLearningRate=args.peakLearningRate
 p_warmupSteps=args.warmupSteps    
@@ -71,6 +71,7 @@ p_evaluationIterations=args.evaluationIterations
 p_startContext=args.startContext
 p_showLearningGraph=args.showLearningGraph
 p_compileModel=args.compileModel
+p_moveDatasetToDevice = args.moveDatasetToDevice
 p_device = args.device
 
 ########################################
@@ -79,8 +80,10 @@ p_device = args.device
 
 def calculationLossBatch(inputBatch,targetBatch,model,device):
     #move the batches to the desired device
-    inputBatch = inputBatch.to(device)
-    targetBatch = targetBatch.to(device)
+    if(inputBatch.device != device):
+        inputBatch = inputBatch.to(device)
+    if(targetBatch.device != device):
+        targetBatch = targetBatch.to(device)
 
     #call the model to generate the next output tokens
     logits = model(inputBatch)
@@ -141,7 +144,6 @@ def trainModel(
         device, 
         tokenizer,
     loadModelFromCheckpoint=True,
-        initialLearningRate=0.00001,
         minimalLearningRate = 0.0001,
         peakLearningRate=0.0004,
         weightDecay=0.1,
@@ -154,12 +156,12 @@ def trainModel(
         compileModel = False,
         ):          
     if loadModelFromCheckpoint:
-        model,optimizer = loadCheckpoint(modelName,device,learningRate=initialLearningRate,weightDecay=weightDecay)
-        print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_}")
+        model,optimizer = loadCheckpoint(modelName,device,learningRate=minimalLearningRate,weightDecay=weightDecay)
+        print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
     else: 
         model = GPTModel(modelConfig).to(device)
-        print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and config {model.config}")
-        optimizer = torch.optim.AdamW(params=model.parameters(),lr=initialLearningRate,weight_decay=weightDecay)
+        print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
+        optimizer = torch.optim.AdamW(params=model.parameters(),lr=minimalLearningRate,weight_decay=weightDecay)
     
     model.train()
 
@@ -186,7 +188,6 @@ def trainModel(
         evaluationStepFrequency=evaluationStepFrequency,
         checkpointStepStorageFrequency=checkpointStepStorageFrequency,
         evaluationIterations=evaluationIterations,
-        initialLearningRate=initialLearningRate,
         minimalLearningRate=minimalLearningRate,
         peakLearningRate=peakLearningRate,
         warmupSteps=warmupSteps,
@@ -203,7 +204,6 @@ def trainModelMedium(
         optimizer, 
         device, 
         tokenizer,
-        initialLearningRate=0.00001,
         minimalLearningRate = 0.0001,
         peakLearningRate=0.0004,
         warmupSteps=100,
@@ -211,6 +211,7 @@ def trainModelMedium(
         evaluationStepFrequency = 10, 
         checkpointStepStorageFrequency = 100,
         evaluationIterations = 5,
+        gradientClippingMaxNorm = .25,#1.0
         startContext = "What is a cat ",
         isCompiled=False
         ):
@@ -218,8 +219,8 @@ def trainModelMedium(
     trainingLosses, validationLosses, trackTokensSeen = [],[],[]
     tokensSeen, globalStep = -1,0
     totalTrainingSteps = numberOfEpochs * len(trainingDataLoader)
-    learningRateIncrement = (peakLearningRate - initialLearningRate) / warmupSteps
-    learningRate = initialLearningRate
+    learningRateIncrement = (peakLearningRate - minimalLearningRate) / warmupSteps
+    learningRate = minimalLearningRate
 
     #iterate over the requested amount of epochs (complete batch runs)
     for epoch in range(numberOfEpochs):
@@ -241,7 +242,7 @@ def trainModelMedium(
             #apply gradient clipping
             if(globalStep>warmupSteps):
                 torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), max_norm=1.0
+                    model.parameters(), max_norm=gradientClippingMaxNorm
                 )
 
             #update the model weights with the loss gradients
@@ -251,7 +252,7 @@ def trainModelMedium(
 
             #calculate the learning rate and top out after warmup and apply it to the optimizer
             if globalStep < warmupSteps:
-                learningRate = initialLearningRate+globalStep*learningRateIncrement
+                learningRate = minimalLearningRate+globalStep*learningRateIncrement
             else:
                 #learningRate = peakLearningRate
                 #apply cosine decay to the learning rate
@@ -273,13 +274,15 @@ def trainModelMedium(
 
                 #print the current results
                 trackTokensSeen.append(tokensSeen)
-                print(f"Epoch: {epoch:02d} {(epochSteps/len(trainingDataLoader)*100):06.2f}%; (Step {globalStep:010d}): Training Loss {trainingLoss:.3f} Validation Loss {validationLoss:.3f}; avg. Step processing time {timePerStep:.3f} ms; learning rate: {learningRate:.10f}")
+                print(f"Epoch: {epoch:02d}/{numberOfEpochs:02d} {(epochSteps/len(trainingDataLoader)*100):06.2f}%; (Step {globalStep:010d}): Training Loss {trainingLoss:.3f} Validation Loss {validationLoss:.3f}; avg. Step processing time {timePerStep:.3f} ms; learning rate: {learningRate:.10f}")
+                
 
             #storage checkpoint interval
             if checkpointStepStorageFrequency is not None and globalStep%checkpointStepStorageFrequency==0:
                 storeModel(modelName,model,isCompiled)
                 storeCheckPoint(modelName,model,optimizer,isCompiled)
                 print(f"Storing model: {modelName}")
+                gc.collect()
     
         #end time of the epoch
         endEpochTs = time.time() * 1000.0
@@ -338,9 +341,9 @@ def stepLearningRateForBatches(numFiles,peakLearningRate,minimalLearningRate):
 
 if p_device is None:
     if torch.cuda.is_available():
-        device = torch.device("cuda")
+       device = torch.device("cuda:0")
     elif torch.mps.is_available():
-        device = torch.device("mps")
+        device = torch.device("mps:0")
     else:
         device = torch.device("cpu")
 else:
@@ -376,12 +379,16 @@ for inputPath in inputPaths:
 
     #create the dataloaders for the input file
     dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]    
+    
+    trainingDataDevice = device if p_moveDatasetToDevice else None
+    print(f"Loading data to device: {p_moveDatasetToDevice} -> {trainingDataDevice}")
     trainingDataLoader = create_tokenized_dataloader_v1(
         tokens=trainingData,
         tokenizer=tokenizer,
         batch_size=p_batchSize,
         max_length=trainingConfig[CONTEXT_LENGTH],
         stride=dlStride,
+        device=trainingDataDevice,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
@@ -391,9 +398,16 @@ for inputPath in inputPaths:
         batch_size=p_batchSize,
         max_length=trainingConfig[CONTEXT_LENGTH],
         stride=dlStride,
+        device=trainingDataDevice,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
+
+    #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
+    del data
+    del trainingData
+    del validationData
+    gc.collect()
 
     print(f"Dataloader config: batch size {p_batchSize} with stride {dlStride}")
 
@@ -410,7 +424,6 @@ for inputPath in inputPaths:
         trainingDataLoader=trainingDataLoader,
         validationDataLoader=validationDataLoader,
         tokenizer=tokenizer,
-        initialLearningRate=p_initialLearningRate,
         minimalLearningRate =minimalLearningRates[dataFileProcessedIdx],
         peakLearningRate=peakLearningRates[dataFileProcessedIdx],
         warmupSteps=p_warmupSteps,    
