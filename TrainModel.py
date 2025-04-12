@@ -211,7 +211,7 @@ def trainModelMedium(
         evaluationStepFrequency = 10, 
         checkpointStepStorageFrequency = 100,
         evaluationIterations = 5,
-        gradientClippingMaxNorm = .25,#1.0
+        gradientClippingMaxNorm = 1.0,
         startContext = "What is a cat ",
         isCompiled=False
         ):
@@ -264,6 +264,8 @@ def trainModelMedium(
             
             endTs = time.time() * 1000.0
             timePerStep=(endTs-startTs)
+
+            gc.collect()
 
             #if the current step reaches the evaluation fequency
             if(globalStep%evaluationStepFrequency==0):

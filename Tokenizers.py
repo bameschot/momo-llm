@@ -65,5 +65,5 @@ class SentencePieceTokenizer:
         return self.tokenizer.decode(ids)
     
     def vocabSize(self):
-        return self.tokenizer.vocab_size
+        return self.tokenizer.vocab_size()
     

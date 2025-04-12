@@ -34,7 +34,7 @@ def simpleTextGeneration(model, idx, maxNewTokens):
     
     return idx
 
-def generateText(model, idx, maxNewTokens,temperature=0.0,topK=None,eosId=None,printNextToken=False,tokenizer=None):
+def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     for i in range(maxNewTokens):
         #ensure inx is no larget than the model supported max context size
@@ -75,11 +75,11 @@ def generateText(model, idx, maxNewTokens,temperature=0.0,topK=None,eosId=None,p
         #append the chosen token to the result
         idx = torch.cat((idx,idxNext),dim=1)
         if printNextToken and tokenizer is not None:
-            print(tokensToText(tokens=idxNext,tkz=tokenizer))
+            print(tokensToText(tokens=idxNext,tkz=tokenizer),end="",flush=True)
     
     return idx
 
-def generateTextShift(model, idx, maxNewTokens,temperature=0.0,topK=None,eosId=None,printNextToken=False,tokenizer=None):
+def generateTextShift(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     inputIdxLength = len(idx[0])
 

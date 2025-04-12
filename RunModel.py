@@ -5,7 +5,7 @@ import torch
 import torch._dynamo
 
 from Tokenizers import *
-from GenerateText import generateTextShift, textToTokens, tokensToText
+from GenerateText import generateTextShift,generateText, textToTokens, tokensToText
 from GPTModelConfig import *
 from GPTModelStorage import *
 
@@ -20,6 +20,7 @@ parser.add_argument("--modelname", type=str,default="TestEconomy_small_r", help=
 parser.add_argument("--tokenizer", type=str,default="gpt2", help="The name of the tokenizer to parse input and output in")
 parser.add_argument("--tokenizerVocabFile", type=str,default=None, help="The path of the vocabulary or model file to load for the tokenizer")
 parser.add_argument("--prompt", type=str,default="Theory of labour", help="The input promt to start generating text with")
+parser.add_argument("--forceLowerCaps", action='store_true', help="ensures that the propmpt text becomes lowercase")
 parser.add_argument("--tokensToGenerate", type=int, default=100, help="The number of tokens to generate")
 parser.add_argument("--temperature",type=float, default=0.5,help="The temperature to use when generating tokens, regulates variety in output")
 parser.add_argument("--topK",type=int, default=50,help="The numper of most probable to pick the next token from, together with temperature this regulates variety in ouput")
@@ -33,6 +34,7 @@ p_modelname = args.modelname
 p_tokenizer = args.tokenizer
 p_tokenizerVocabFile = args.tokenizerVocabFile
 p_prompt = args.prompt 
+p_forceLowerCaps= args.forceLowerCaps
 p_tokensToGenerate = args.tokensToGenerate
 p_temperature= args.temperature     
 p_topK=args.topK
@@ -72,12 +74,13 @@ if p_compileModel:
         torch._dynamo.config.suppress_errors = True
     model = torch.compile(model, mode="max-autotune")
 
-inputTokens = textToTokens(p_prompt,tokenizer).to(device)
+prompt = p_forceLowerCaps if p_prompt.lower() else p_prompt
+inputTokens = textToTokens(prompt,tokenizer).to(device)
 
 print("-----------------------")
 print("start generating")
 print("-----------------------")
-print(f"Prompt: {p_prompt}")
+print(f"Prompt: {prompt}")
 
 startTs = time.time() * 1000.0
 

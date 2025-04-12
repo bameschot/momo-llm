@@ -42,13 +42,20 @@ def tokenizeProcessedDataFile(tokenizer,directory=TOKENIZER_PROCESSED_DATA_DIREC
             text = f.read(bufferSize)
         return tokens
 
-def trainSentencePieceTokenizer(inputFilePaths, processedOutputFileDir=TOKENIZER_VOCABULARY_DIRECTORY,processedOutputFileName="vocab-training.txt",vocabSize=8008,vocabularyName="sp",newTrainingFile=True):
+def trainSentencePieceTokenizer(
+        inputFilePaths, 
+        processedOutputFileDir=TOKENIZER_VOCABULARY_DIRECTORY,
+        processedOutputFileName="vocab-training.txt",
+        vocabSize=8000,
+        vocabularyName="sp",
+        newTrainingFile=True,
+        forceLowerCaps=False):
     foup = f"{processedOutputFileDir}/{processedOutputFileName}.txt"
     if not os.path.isfile(foup) or newTrainingFile:
         print("Starting a new tokenize training file")
-        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,maintainLineBreaks=True)
+        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,True,forceLowerCaps)
 
-    fullModelName = f"{vocabularyName}{vocabSize}"
+    fullModelName = f"{vocabularyName}-{vocabSize}"
     modelDir = f"{processedOutputFileDir}/{fullModelName}"
     Path(f"{modelDir}").mkdir(parents=True, exist_ok=True)
 
@@ -67,7 +74,14 @@ def trainSentencePieceTokenizer(inputFilePaths, processedOutputFileDir=TOKENIZER
                                 normalization_rule_name="identity",
                                 max_sentence_length=100000)    
 
-def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False): 
+def processRawTextLine(line,forceLowerCaps=False):
+    line = line.strip().replace('\n\n','\n')
+    if forceLowerCaps:
+        line = line.lower()
+
+    return line
+
+def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False,forceLowerCaps=False): 
     print(f'Creating a vocabulary for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}").mkdir(parents=True, exist_ok=True)
 
@@ -88,7 +102,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
                     if line == '':
                         break
                     text += " "
-                    text += line.strip()
+                    text += processRawTextLine(line,forceLowerCaps)
                     if maintainLineBreaks:
                         text+='\n'
 
@@ -110,7 +124,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
     vocabulary = {token:integer for integer,token in enumerate(sorted(rawVocabulary))}
     return vocabulary
 
-def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=500): 
+def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=500,forceLowerCaps=False): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
 
@@ -133,7 +147,7 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
                 if line == '':
                     break
                 text += " "
-                text += line.strip()
+                text += processRawTextLine(line,forceLowerCaps)
 
             
             #split text into tokens
@@ -214,9 +228,11 @@ class GPTDatasetV1(Dataset):
         return self.input_ids[idx], self.target_ids[idx]
 
 class GPTTokenizedDatasetV1(Dataset):
-    def __init__(self, tokens, max_length, stride,device):
+    def __init__(self, tokens, vocabSize, max_length, stride,device):
         self.input_ids = []
         self.target_ids = []
+
+        #dataType = torch.int32 #torch.int32 if vocabSize <= 32767 else torch.int32
 
         # Use a sliding window to chunk the book into overlapping sequences of max_length
         for i in range(0, len(tokens) - max_length, stride):
@@ -228,7 +244,7 @@ class GPTTokenizedDatasetV1(Dataset):
             else:
                 self.input_ids.append(torch.tensor(input_chunk))
                 self.target_ids.append(torch.tensor(target_chunk))
-
+                
     def __len__(self):
         return len(self.input_ids)
 
@@ -250,8 +266,8 @@ def create_text_dataloader_v1(txt,tokenizer ,batch_size, max_length, stride,
 def create_tokenized_dataloader_v1(tokens,tokenizer ,batch_size, max_length, stride,device,
                          shuffle=True, drop_last=True, num_workers=0):
     # Create dataset
-    dataset = GPTTokenizedDatasetV1(tokens, max_length, stride,device)
-
+    dataset = GPTTokenizedDatasetV1(tokens,tokenizer.vocabSize(), max_length, stride,device)
+ 
     # Create dataloader
     dataloader = DataLoader(
         dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last, num_workers=num_workers)
