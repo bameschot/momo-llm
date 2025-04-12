@@ -265,7 +265,7 @@ def trainModelMedium(
             endTs = time.time() * 1000.0
             timePerStep=(endTs-startTs)
 
-            gc.collect()
+            #gc.collect()
 
             #if the current step reaches the evaluation fequency
             if(globalStep%evaluationStepFrequency==0):
