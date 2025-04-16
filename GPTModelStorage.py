@@ -66,7 +66,7 @@ def loadModel(modelName,device):
 #turns the keys of state dicts for compiled models to the keys for non-compiled models 
 #based on https://github.com/pytorch/pytorch/issues/101107#issuecomment-1542688089
 def repairCompiledStateDict(stateDict):
-    print('Converting compiled state dictionary to uncompiled state dictionary')
+    #print('Converting compiled state dictionary to uncompiled state dictionary')
     repairedDict = OrderedDict()
     for k,v in stateDict.items():
         newEntry = k.replace("_orig_mod.","")

@@ -74,7 +74,7 @@ if p_compileModel:
         torch._dynamo.config.suppress_errors = True
     model = torch.compile(model, mode="max-autotune")
 
-prompt = p_forceLowerCaps if p_prompt.lower() else p_prompt
+prompt = p_prompt.lower() if p_forceLowerCaps else p_prompt
 inputTokens = textToTokens(prompt,tokenizer).to(device)
 
 print("-----------------------")
@@ -85,7 +85,7 @@ print(f"Prompt: {prompt}")
 startTs = time.time() * 1000.0
 
 with torch.no_grad():
-    outputTokens = generateTextShift(
+    outputTokens = generateText(
         model=model,
         idx=inputTokens,
         maxNewTokens=p_tokensToGenerate,
@@ -98,6 +98,7 @@ outputText = tokensToText(outputTokens,tokenizer)
 endTs = time.time() * 1000.0
 runtimeMs = (endTs-startTs)
 
+print("")
 print("-----------------------")
 print("Generated")
 print("-----------------------")

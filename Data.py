@@ -66,13 +66,14 @@ def trainSentencePieceTokenizer(
                                 self_test_sample_size=0,
                                 input_format="text",
                                 character_coverage=0.9995,
-                                num_threads=os.cpu_count(),
+                                num_threads=os.cpu_count()-2,
                                 split_digits=True,
                                 allow_whitespace_only_pieces=True,
                                 byte_fallback=True,
+                                train_extremely_large_corpus=True,
                                 unk_surface=r" \342\201\207 ",
                                 normalization_rule_name="identity",
-                                max_sentence_length=100000)    
+                                max_sentence_length=300000)    
 
 def processRawTextLine(line,forceLowerCaps=False):
     line = line.strip().replace('\n\n','\n')

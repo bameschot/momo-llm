@@ -37,7 +37,7 @@ def simpleTextGeneration(model, idx, maxNewTokens):
 def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     for i in range(maxNewTokens):
-        #ensure inx is no larget than the model supported max context size
+        #ensure idx is no larger than the model supported max context size
         idxConditioned = idx[:,-contextSize:]
 
         #no_grad ensure that no backwards passes are performed when running the model, in this mode inference is performed efficiently
