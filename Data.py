@@ -21,12 +21,12 @@ PROCESSED_BIN_OUTPUT_FILE_NAME = "./processed-text.bin"
 TOKENIZED_READ_BUFFER_SIZE = 1024*1024*5 #5mb
 
 
-def readInputFilePaths(directory=TOKENIZER_INPUT_DATA_DIRECTORY,globPattern='/**/*.*'):
-    print(f"Finding files for pattern: {directory + globPattern}")
+def readInputFilePaths(globPattern=TOKENIZER_INPUT_DATA_DIRECTORY+'/*.*'):
+    print(f"Finding files for pattern: {globPattern}")
     patterns = globPattern.split("|")
     files = []
     for pattern in patterns:
-        files.extend(glob.glob(directory + pattern, recursive=True)) 
+        files.extend(glob.glob(pattern, recursive=True)) 
     return files
 
 def readProcessedDataFile(directory=TOKENIZER_PROCESSED_DATA_DIRECTORY):
@@ -49,11 +49,11 @@ def trainSentencePieceTokenizer(
         vocabSize=8000,
         vocabularyName="sp",
         newTrainingFile=True,
-        forceLowerCaps=False):
+        forceLowerCase=False):
     foup = f"{processedOutputFileDir}/{processedOutputFileName}.txt"
     if not os.path.isfile(foup) or newTrainingFile:
         print("Starting a new tokenize training file")
-        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,True,forceLowerCaps)
+        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,True,forceLowerCase)
 
     fullModelName = f"{vocabularyName}-{vocabSize}"
     modelDir = f"{processedOutputFileDir}/{fullModelName}"
@@ -75,14 +75,14 @@ def trainSentencePieceTokenizer(
                                 normalization_rule_name="identity",
                                 max_sentence_length=300000)    
 
-def processRawTextLine(line,forceLowerCaps=False):
+def processRawTextLine(line,forceLowerCase=False):
     line = line.strip().replace('\n\n','\n')
-    if forceLowerCaps:
+    if forceLowerCase:
         line = line.lower()
 
     return line
 
-def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False,forceLowerCaps=False): 
+def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False,forceLowerCase=False): 
     print(f'Creating a vocabulary for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}").mkdir(parents=True, exist_ok=True)
 
@@ -103,7 +103,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
                     if line == '':
                         break
                     text += " "
-                    text += processRawTextLine(line,forceLowerCaps)
+                    text += processRawTextLine(line,forceLowerCase)
                     if maintainLineBreaks:
                         text+='\n'
 
@@ -125,7 +125,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
     vocabulary = {token:integer for integer,token in enumerate(sorted(rawVocabulary))}
     return vocabulary
 
-def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=500,forceLowerCaps=False): 
+def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=500,forceLowerCase=False): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
 
@@ -148,7 +148,7 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
                 if line == '':
                     break
                 text += " "
-                text += processRawTextLine(line,forceLowerCaps)
+                text += processRawTextLine(line,forceLowerCase)
 
             
             #split text into tokens
