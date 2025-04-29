@@ -30,6 +30,7 @@ parser.add_argument("--modelName", type=str,default="TestEconomy_small_r", help=
 parser.add_argument('--newModel', action='store_false',help= "indicates if a new model should be trained, if not the model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with the same name")
 parser.add_argument("--trainingModelConfigName", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--inputData", type=str,default=TOKENIZER_PROCESSED_DATA_DIRECTORY, help="The glob pattern for selecting input data")
+parser.add_argument('--shuffleInputFiles', action='store_true',help= "indicates if the (era) input files are shuffled")
 parser.add_argument("--batchSize", type=int, default=40, help="The batch size of the dataloader")
 parser.add_argument("--stride", type=int, default=None, help="The stride of the dataloader")
 
@@ -54,6 +55,7 @@ args = parser.parse_args()
 
 print(args.newModel)
 p_inputData = args.inputData
+p_shuffleInputFiles = args.shuffleInputFiles
 p_batchSize=args.batchSize
 p_stride = args.stride
 p_trainRatio = args.trainRatio
@@ -291,7 +293,7 @@ def trainModelMedium(
     
         #end time of the epoch
         endEpochTs = time.time() * 1000.0
-        print(f"Epoch [{epoch}] processing time: {(endEpochTs-startEpochTs)/3_600_000} hours")
+        print(f"Epoch [{epoch}] processing time: {(endEpochTs-startEpochTs)/3_600_000:.2f} hours")
         #After each epoch print a sample of the model's output
         generateAndPrintSample(model,tokenizer,device,startContext)
         
@@ -359,9 +361,13 @@ trainingConfig = modelConfigs[p_trainingConfigName]
 tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
 
 numDataLoaderWorkers = 0
-print (f"Selection glob: {p_inputData}")
 inputPaths = readInputFilePaths(p_inputData)
-random.shuffle(inputPaths)
+
+if(p_shuffleInputFiles):
+    random.shuffle(inputPaths)
+else:
+    inputPaths.sort()
+
 print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0

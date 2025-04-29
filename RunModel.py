@@ -67,8 +67,8 @@ tokenizer = initializeTokenizer(model.config[TOKENIZER_TYPE],model.config[TOKENI
 
 print(f"Model loaded: {p_modelname}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
 
-print("compiling model")
 if p_compileModel:
+    print("compiling model")
     #required for mps compat
     if torch.mps.is_available():
         torch._dynamo.config.suppress_errors = True
@@ -80,7 +80,7 @@ inputTokens = textToTokens(prompt,tokenizer).to(device)
 print("-----------------------")
 print("start generating")
 print("-----------------------")
-print(f"Prompt: {prompt}")
+print(f"Prompt: {prompt} [{inputTokens.shape[1]} tokens]")
 
 startTs = time.time() * 1000.0
 
@@ -103,4 +103,4 @@ print("-----------------------")
 print("Generated")
 print("-----------------------")
 print(outputText)
-print(f"Runtime: {runtimeMs} ms. T/Ps: {(p_tokensToGenerate/(runtimeMs/1000.0))}")
+print(f"Runtime: {runtimeMs} ms. T/Ps: {(p_tokensToGenerate/(runtimeMs/1000.0))} [{outputTokens.shape[1]} tokens]")

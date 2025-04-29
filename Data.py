@@ -21,13 +21,13 @@ PROCESSED_BIN_OUTPUT_FILE_NAME = "./processed-text.bin"
 TOKENIZED_READ_BUFFER_SIZE = 1024*1024*5 #5mb
 
 
-def readInputFilePaths(globPattern=TOKENIZER_INPUT_DATA_DIRECTORY+'/*.*'):
+def readInputFilePaths(globPattern=TOKENIZER_INPUT_DATA_DIRECTORY+'/*.*',filterDirectories=True):
     print(f"Finding files for pattern: {globPattern}")
     patterns = globPattern.split("|")
     files = []
     for pattern in patterns:
         files.extend(glob.glob(pattern, recursive=True)) 
-    return files
+    return list(filter(isFile,files))
 
 def readProcessedDataFile(directory=TOKENIZER_PROCESSED_DATA_DIRECTORY):
     with open(f'{directory}/{PROCESSED_TXT_OUTPUT_FILE_NAME}','r') as f:
@@ -51,7 +51,7 @@ def trainSentencePieceTokenizer(
         newTrainingFile=True,
         forceLowerCase=False):
     foup = f"{processedOutputFileDir}/{processedOutputFileName}.txt"
-    if not os.path.isfile(foup) or newTrainingFile:
+    if not isFile(foup) or newTrainingFile:
         print("Starting a new tokenize training file")
         preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,True,forceLowerCase)
 
@@ -81,6 +81,9 @@ def processRawTextLine(line,forceLowerCase=False):
         line = line.lower()
 
     return line
+
+def isFile(path):
+    return os.path.isfile(path)
 
 def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False,forceLowerCase=False): 
     print(f'Creating a vocabulary for files: {inputFilePaths}')
@@ -164,14 +167,14 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
 
         #if the token list exceeds the cutoff point write it to a batch file
         if(len(tokens) > tokenListCutoff):
-            outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex}.bin'
+            outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'
             picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
             print(f"Writing processed output file: {outputPath}")
             outputFileIndex = outputFileIndex+1
             tokens.clear()
     
     #write the remainder of the tokens to the file
-    outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex}.bin'
+    outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'
     picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
     print(f"Writing final processed output file: {outputPath}")
     
