@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from GPTModelConfig import *
 
-from Modules import LayerNormalization, FeedForward, MultiHeadAttention,MHAPyTorchScaledDotProduct
+from Modules import LayerNormalization, FeedForward, MultiHeadAttention
 
 class GPTModel(nn.Module):
     def __init__(self,config):
@@ -24,15 +24,19 @@ class GPTModel(nn.Module):
         #create OutHead as a linear transformation
         self.outHead = nn.Linear(config[EMBEDDING_DIMENSION],config[VOCABULARY_SIZE],bias=False)
 
+        self.currentPos = 0
+
+
     def forward(self,inIndex:torch.Tensor):
         #input tensor properties
         batchSize, sequenceLength = inIndex.shape
         
         #embeddings and positional embeddings for the input, ensures that the embeddings are on the correct device
         inTokenEmbeddings = self.tokenEmbeddings(inIndex)
-        inPositionalEmbeddings = self.positionalEmbeddings(
-            torch.arange(sequenceLength,device=inIndex.device)
-        )
+        positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.long)
+        self.currentPos+=sequenceLength
+        #print(f"pids {positionalIds} cp {self.currentPos} sl {sequenceLength} cl {self.config[CONTEXT_LENGTH]} ed {self.config[EMBEDDING_DIMENSION]}, PSE {self.positionalEmbeddings}")
+        inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
 
         #modify the embeddings with the positional embeddings
         x = inTokenEmbeddings + inPositionalEmbeddings
@@ -53,6 +57,11 @@ class GPTModel(nn.Module):
     def memSizeMb(self):
         sizeBytes = self.numberOfParameters() * 2 #assumes float6 or bfloat16
         return round(sizeBytes / (1024 * 1024),2)
+    
+    def resetCache(self):
+        self.currentPos = 0
+        for block in self.tranformerBlocks:
+            block.attention.resetCache()
 
 
 class GPTTransformerBlock(nn.Module):

@@ -5,7 +5,7 @@ import torch
 import torch._dynamo
 
 from Tokenizers import *
-from GenerateText import generateTextShift,generateText, textToTokens, tokensToText
+from GenerateText import generateText, textToTokens, tokensToText
 from GPTModelConfig import *
 from GPTModelStorage import *
 

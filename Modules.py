@@ -89,7 +89,7 @@ class MultiHeadAttention(nn.Module):
         super().__init__()
 
         assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
-
+        self.contextLength = contextLength
         self.embeddingDimension=embeddingDimension
         self.numberOfHeads = numberOfHeads 
         self.headDimension = embeddingDimension // numberOfHeads
@@ -98,7 +98,11 @@ class MultiHeadAttention(nn.Module):
         self.wValue = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
         self.dropout = nn.Dropout(attentionDropoutRate)
         self.outProjection = nn.Linear(embeddingDimension,embeddingDimension)        
-        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))
+        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))#,persistent=False)
+
+        self.register_buffer('cacheK',None,persistent=False)
+        self.register_buffer('cacheV',None,persistent=False)
+        self.pointerCurrentPosition = 0
 
     def forward(self, x:torch.Tensor):
         #input data
@@ -106,13 +110,22 @@ class MultiHeadAttention(nn.Module):
 
         #get the keys queries and values for each input
         queries = self.wQuery(x)
-        keys = self.wKey(x)
-        values = self.wValue(x)
+        keysNew = self.wKey(x)
+        valuesNew = self.wValue(x)
 
         #create views for each of the heads
         queries = queries.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
-        keys = keys.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
-        values = values.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
+        keysNew = keysNew.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
+        valuesNew = valuesNew.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
+
+        # Key value value cache logic
+        if self.cacheK is None:
+            self.cacheK, self.cacheV = keysNew, valuesNew
+        else:
+            self.cacheK = torch.cat([self.cacheK,keysNew],dim=1)
+            self.cacheV = torch.cat([self.cacheV,valuesNew],dim=1)
+        
+        keys, values = self.cacheK, self.cacheV 
 
         #transpose to cahnge from batch,numberOfTokens,numberOfHeads,headDimension -> batch,numberOfHeads,numberOfTokens,headDimension
         queries = queries.transpose(1,2)
@@ -122,7 +135,14 @@ class MultiHeadAttention(nn.Module):
         #determine the attention scores by calculating the dot product for each head
         attentionScores = queries @ keys.transpose(2,3)
         #mask the attention scores with a mask of which the upper diagonal filled is infinites
-        attentionScores.masked_fill_(self.mask.bool()[:numberOfTokens,:numberOfTokens],-torch.inf)
+        numTokensQ = queries.shape[-2]
+        numTokensK = keys.shape[-2]
+        maskBool = self.mask.bool()[
+            self.pointerCurrentPosition:self.pointerCurrentPosition + numTokensQ, :numTokensK
+            ]
+        self.pointerCurrentPosition += numTokensQ
+
+        attentionScores.masked_fill_(maskBool,-torch.inf)
         #normalized attention weights
         attentionWeights = torch.softmax(attentionScores / keys.shape[-1] ** 0.5,dim=-1)
         #apply the dropout mask to the masked and normalized weights
@@ -133,49 +153,8 @@ class MultiHeadAttention(nn.Module):
         contextVectors = contextVectors.contiguous().view(batchNr, numberOfTokens,self.embeddingDimension)
 
         # adds a linear projection
-        return self.outProjection(contextVectors)  
+        return self.outProjection(contextVectors)
 
-#####
-#adapted from https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/02_bonus_efficient-multihead-attention/mha-implementations.ipynb
-#####
-class MHAPyTorchScaledDotProduct(nn.Module):
-    def __init__(self, numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,qkvBias=False):
-        super().__init__()
-
-        assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
-
-        self.numberOfHeads = numberOfHeads
-        self.context_length = contextLength
-        self.headDimension = embeddingDimension // numberOfHeads
-        self.embeddingDimension = embeddingDimension
-
-        self.qkv = nn.Linear(embeddingDimension, 3 * embeddingDimension, bias=qkvBias)
-        self.proj = nn.Linear(embeddingDimension, embeddingDimension)
-        self.dropout = attentionDropoutRate
-
-    def forward(self, x):
-        batchSize, numberOfTokens, embeddingDimension = x.shape
-
-        # (b, num_tokens, embed_dim) --> (b, num_tokens, 3 * embed_dim)
-        qkv = self.qkv(x)
-
-        # (b, num_tokens, 3 * embed_dim) --> (b, num_tokens, 3, num_heads, head_dim)
-        qkv = qkv.view(batchSize, numberOfTokens, 3, self.numberOfHeads, self.headDimension)
-
-        # (b, num_tokens, 3, num_heads, head_dim) --> (3, b, num_heads, num_tokens, head_dim)
-        qkv = qkv.permute(2, 0, 3, 1, 4)
-
-        # (3, b, num_heads, num_tokens, head_dim) -> 3 times (b, num_heads, num_tokens, head_dim)
-        queries, keys, values = qkv
-
-        useDropout = 0. if not self.training else self.dropout
-
-        contextVector = nn.functional.scaled_dot_product_attention(
-            queries, keys, values, attn_mask=None, dropout_p=useDropout, is_causal=True)
-
-        # Combine heads, where self.d_out = self.num_heads * self.head_dim
-        contextVector = contextVector.transpose(1, 2).contiguous().view(batchSize, numberOfTokens, self.embeddingDimension)
-
-        contextVector = self.proj(contextVector)
-
-        return contextVector
+    def resetCache(self):
+        self.cacheK, self.cacheV = None, None
+        self.pointerCurrentPosition = 0  
