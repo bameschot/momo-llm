@@ -104,6 +104,9 @@ class MultiHeadAttention(nn.Module):
         self.register_buffer('cacheV',None,persistent=False)
         self.pointerCurrentPosition = 0
 
+        #gated attention
+        self.wGate = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+
     def forward(self, x:torch.Tensor):
         #input data
         batchNr, numberOfTokens, dIn = x.shape
@@ -112,6 +115,9 @@ class MultiHeadAttention(nn.Module):
         queries = self.wQuery(x)
         keysNew = self.wKey(x)
         valuesNew = self.wValue(x)
+
+        #initial attention gate value
+        gate = self.wGate(x)
 
         #create views for each of the heads
         queries = queries.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
@@ -151,6 +157,9 @@ class MultiHeadAttention(nn.Module):
         #calculate the context vector by multipying the attention weights with the value and combine the head results
         contextVectors = (attentionWeights @ values).transpose(1,2)
         contextVectors = contextVectors.contiguous().view(batchNr, numberOfTokens,self.embeddingDimension)
+
+        #apply gate
+        contextVectors = contextVectors * torch.sigmoid(gate)
 
         # adds a linear projection
         return self.outProjection(contextVectors)
