@@ -79,9 +79,6 @@ def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,pri
     
     return idx
 
-#
-# !! not used due to issues with training not working when caching is enabled
-#
 
 def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
@@ -93,7 +90,7 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=No
 
         #ensure idx is no larger than the model supported max context size and fill the cache with the prompt   
         model.resetCache()
-        logits = model(idx[:,-contextSize:])
+        logits = model(idx[:,-contextSize:],True)
 
         #generate the requested logits and (on the first pass process the first generated logit of the initial model call)
         for i in range(maxNewTokens):
