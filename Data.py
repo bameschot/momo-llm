@@ -1,4 +1,5 @@
 import os
+import gc
 import glob
 import pickle
 import gzip
@@ -143,25 +144,18 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
 
         print(f'Reading {inputFilePath}')
         with open(inputFilePath,"r",encoding = "utf-8") as input:
-            text = ""
             
-            #read the whole file in one go to avoid ugly midsentence/word breaks
+            #read the whole file and tokenize line by line
+            lineCount = 0
             while True: 
+                lineCount+=1
                 line = input.readline()
                 if line == '':
                     break
-                text += " "
-                text += processRawTextLine(line,forceLowerCase)
+                tokens.extend(tokenizer.encode(processRawTextLine(line,forceLowerCase)))
 
-            
-            #split text into tokens
-            tokens.extend(tokenizer.encode(text))
-            print(f"{inputFilePath} tokensSize: {len(tokens)} / {tokenListCutoff}")
-            del text
-
-            #write the text to the joined output with the end of text technical token
-            #if fileIdx > 0:
-            #    joinedOutput.write(END_OF_TEXT_VOCAB_WORD)
+                if lineCount % 100000 == 0:
+                    print(f'{inputFilePath}: read {lineCount} lines, tokens={len(tokens)}')
             
             fileIdx+=1
 
