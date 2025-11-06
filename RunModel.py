@@ -5,7 +5,7 @@ import torch
 import torch._dynamo
 
 from Tokenizers import *
-from GenerateText import generateText, textToTokens, tokensToText
+from GenerateText import generateTextCached, textToTokens, tokensToText
 from GPTModelConfig import *
 from GPTModelStorage import *
 
@@ -85,7 +85,7 @@ print(f"Prompt: {prompt} [{inputTokens.shape[1]} tokens]")
 startTs = time.time() * 1000.0
 
 with torch.no_grad():
-    outputTokens = generateText(
+    outputTokens = generateTextCached(
         model=model,
         idx=inputTokens,
         maxNewTokens=p_tokensToGenerate,

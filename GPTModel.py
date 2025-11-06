@@ -16,8 +16,8 @@ class GPTModel(nn.Module):
         #create the dropout embedding
         self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
         #create the transformer blocks
-        self.tranformerBlocks = nn.Sequential(
-            *[GPTTransformerBlock(config) for _ in range(config[N_LAYERS])]
+        self.tranformerBlocks = nn.ModuleList(
+            [GPTTransformerBlock(config) for _ in range(config[N_LAYERS])]
         )
         #create the final normalization layer
         self.finalNormalization = LayerNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
@@ -27,23 +27,29 @@ class GPTModel(nn.Module):
         self.currentPos = 0
 
 
-    def forward(self,inIndex:torch.Tensor):
+    def forward(self,inIndex:torch.Tensor,useCache=False):
         #input tensor properties
         batchSize, sequenceLength = inIndex.shape
-        
+    
         #embeddings and positional embeddings for the input, ensures that the embeddings are on the correct device
         inTokenEmbeddings = self.tokenEmbeddings(inIndex)
-        positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.long)
-        self.currentPos+=sequenceLength
-        #print(f"pids {positionalIds} cp {self.currentPos} sl {sequenceLength} cl {self.config[CONTEXT_LENGTH]} ed {self.config[EMBEDDING_DIMENSION]}, PSE {self.positionalEmbeddings}")
+        if useCache:
+            positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.long)
+            self.currentPos+=sequenceLength
+        else:
+            positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.long)
         inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
 
         #modify the embeddings with the positional embeddings
         x = inTokenEmbeddings + inPositionalEmbeddings
+        
         #apply dropout
         x = self.dropoutEmbeddings(x) 
+        
         #apply the transformer blocks
-        x = self.tranformerBlocks(x)
+        for blk in self.tranformerBlocks:
+            x = blk(x,useCache)
+        
         #normalize the final result of the transformers
         x = self.finalNormalization(x)
 
@@ -79,10 +85,10 @@ class GPTTransformerBlock(nn.Module):
         self.normalizationLayer2 = LayerNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
         self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
 
-    def forward(self,x):
+    def forward(self,x, useCache=False):
         shortcut = x
         x = self.normalizationLayer1(x)
-        x = self.attention(x)
+        x = self.attention(x,useCache)
         x = self.dropoutShortcut(x)
         x = x + shortcut
 
