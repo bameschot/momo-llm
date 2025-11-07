@@ -63,6 +63,16 @@ class LayerNormalization(nn.Module):
         #scale and offset the normalized x with the trainable parameters
         return self.scale * normalizedX + self.shift
     
+class RMSNormalization(nn.Module):
+    def __init__(self,embeddingDimension):
+        super().__init__()
+        self.scale = nn.Parameter(torch.ones(embeddingDimension))
+
+    def forward(self,x):
+        rms = torch.sqrt(torch.mean(x ** 2, dim=-1,keepdim=True) + 1e-5)
+        normX = x / rms
+        return self.scale * normX
+    
 #
 # Main attention module
 #
@@ -81,6 +91,7 @@ class MultiHeadAttention(nn.Module):
         self.wValue = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
         if attentionDropoutRate > 0:
             self.dropout = nn.Dropout(attentionDropoutRate)
+
         self.outProjection = nn.Linear(embeddingDimension,embeddingDimension)        
         self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))#,persistent=False)
 
@@ -142,7 +153,7 @@ class MultiHeadAttention(nn.Module):
         #normalized attention weights
         attentionWeights = torch.softmax(attentionScores / keys.shape[-1] ** 0.5,dim=-1)
         #apply the dropout mask to the masked and normalized weights
-        if self.dropout != None:
+        if hasattr(self,'dropout'):
             attentionWeights = self.dropout(attentionWeights)
         
         #calculate the context vector by multipying the attention weights with the value and combine the head results
