@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from GPTModelConfig import *
 
-from Modules import LayerNormalization, FeedForward, MultiHeadAttention
+from Modules import LayerNormalization, FeedForward, FeedForwardBypass, MultiHeadAttention
 
 class GPTModel(nn.Module):
     def __init__(self,config):
@@ -14,7 +14,8 @@ class GPTModel(nn.Module):
         #create the positional embedding
         self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION])
         #create the dropout embedding
-        self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
+        if self.config[DROPOUT_EMBEDDING_RATE] > 0:
+            self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
         #create the transformer blocks
         self.tranformerBlocks = nn.ModuleList(
             [GPTTransformerBlock(config) for _ in range(config[N_LAYERS])]
@@ -44,7 +45,8 @@ class GPTModel(nn.Module):
         x = inTokenEmbeddings + inPositionalEmbeddings
         
         #apply dropout
-        x = self.dropoutEmbeddings(x) 
+        if self.dropoutEmbeddings != None:
+            x = self.dropoutEmbeddings(x) 
         
         #apply the transformer blocks
         for blk in self.tranformerBlocks:
@@ -80,22 +82,25 @@ class GPTTransformerBlock(nn.Module):
             config[DROPOUT_ATTENTION_RATE],
             config[QKV_BIAS]
         )
-        self.feedForward = FeedForward(embeddingDimension=config[EMBEDDING_DIMENSION])
+        self.feedForward = FeedForwardBypass(embeddingDimension=config[EMBEDDING_DIMENSION])
         self.normalizationLayer1 = LayerNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
         self.normalizationLayer2 = LayerNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
-        self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
+        if config[DROPOUT_SHORTCUT_RATE] > 0:
+            self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
 
     def forward(self,x, useCache=False):
         shortcut = x
         x = self.normalizationLayer1(x)
         x = self.attention(x,useCache)
-        x = self.dropoutShortcut(x)
+        if self.dropoutShortcut != None:
+            x = self.dropoutShortcut(x)
         x = x + shortcut
 
         shortcut = x
         x = self.normalizationLayer2(x)
         x = self.feedForward(x)
-        x = self.dropoutShortcut(x)
+        if self.dropoutShortcut != None:
+            x = self.dropoutShortcut(x)
         x = x + shortcut
 
         return x

@@ -390,6 +390,10 @@ for inputPath in inputPaths:
     trainingData = data[:splitIdx]
     validationData = data[splitIdx:]
 
+    #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
+    del data
+    gc.collect()
+
     #create the dataloaders for the input file
     dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]    
     
@@ -405,6 +409,10 @@ for inputPath in inputPaths:
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
+    #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
+    del trainingData
+    gc.collect()
+    print(f"Loaded training data")
     validationDataLoader = create_tokenized_dataloader_v1(
         tokens=validationData,
         tokenizer=tokenizer,
@@ -415,10 +423,9 @@ for inputPath in inputPaths:
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
+    print(f"Loaded validation data")
 
     #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
-    del data
-    del trainingData
     del validationData
     gc.collect()
 

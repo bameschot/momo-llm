@@ -10,6 +10,13 @@ class GELU(nn.Module):
             torch.sqrt(torch.tensor(2.0 / torch.pi)) * (x + 0.044715 * torch.pow(x,3))
             )
         )
+    
+class Swich(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self,x):
+        return x * torch.sigmoid(x)
 
 class FeedForward(nn.Module):
     def __init__(self,embeddingDimension, expansionFactor=4):
@@ -25,6 +32,20 @@ class FeedForward(nn.Module):
 
     def forward(self,x):
         return self.layers(x)
+    
+class FeedForwardBypass(nn.Module):
+    def __init__(self,embeddingDimension):
+        super().__init__()
+
+        self.layer1 = nn.Linear(embeddingDimension,embeddingDimension)
+        self.layer2 = nn.Linear(embeddingDimension,embeddingDimension)
+        self.layer3 = nn.Linear(embeddingDimension,embeddingDimension)
+        self.swich = Swich()
+
+    def forward(self,x):
+        xL1 = self.layer1(x)
+        xL2 = self.layer2(x)
+        return self.layer3(self.swich(xL1) * xL2)
     
 class LayerNormalization(nn.Module):
     def __init__(self,embeddingDimension):
@@ -58,7 +79,8 @@ class MultiHeadAttention(nn.Module):
         self.wQuery = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
         self.wKey = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
         self.wValue = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
-        self.dropout = nn.Dropout(attentionDropoutRate)
+        if attentionDropoutRate > 0:
+            self.dropout = nn.Dropout(attentionDropoutRate)
         self.outProjection = nn.Linear(embeddingDimension,embeddingDimension)        
         self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))#,persistent=False)
 
@@ -120,7 +142,8 @@ class MultiHeadAttention(nn.Module):
         #normalized attention weights
         attentionWeights = torch.softmax(attentionScores / keys.shape[-1] ** 0.5,dim=-1)
         #apply the dropout mask to the masked and normalized weights
-        attentionWeights = self.dropout(attentionWeights)
+        if self.dropout != None:
+            attentionWeights = self.dropout(attentionWeights)
         
         #calculate the context vector by multipying the attention weights with the value and combine the head results
         contextVectors = (attentionWeights @ values).transpose(1,2)
