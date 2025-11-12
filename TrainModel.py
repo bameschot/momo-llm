@@ -154,32 +154,16 @@ def trainModel(
         evaluationStepFrequency = 10, 
         evaluationIterations = 5,
         checkpointStepStorageFrequency = 100,
-        startContext = "What is a cat",
+        startContext = "What is a cat ",
         compileModel = False,
-        era = 1
+        era = 1,
+        model = None,
+        optimizer = None
         ):          
-    if loadModelFromCheckpoint:
-        model,optimizer = loadCheckpoint(modelName,device,learningRate=minimalLearningRate,weightDecay=weightDecay)
-        print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
-    else: 
-        model = GPTModel(modelConfig).to(device)
-        print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
-        optimizer = torch.optim.AdamW(params=model.parameters(),lr=minimalLearningRate,weight_decay=weightDecay)
     
-    model.train()
+    if(model is None or optimizer is None):
+        model, optimizer = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,minimalLearningRate,weightDecay,compileModel)
 
-    #compile the model if requested
-    if compileModel:
-        print("Compiling model")
-        #required for mps compat
-        if torch.mps.is_available():
-            torch._dynamo.config.suppress_errors = True
-        torch.set_float32_matmul_precision('high')
-        model = torch.compile(model)#,mode="max-autotune")
-    
-    print(f"Training model on {device}")
-
-    
     return trainModelMedium(
         modelName=modelName,
         model=model,
@@ -307,7 +291,27 @@ def trainModelMedium(
     print(f"Storing model: {modelName}")
     return trainingLosses, validationLosses, trackTokensSeen, learningRate    
 
+def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learningRate, weightDecay, compileModel):
+    if loadModelFromCheckpoint:
+        model,optimizer = loadCheckpoint(modelName,device,learningRate=learningRate,weightDecay=weightDecay)
+        print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
+    else: 
+        model = GPTModel(modelConfig).to(device)
+        print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
+        optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
+    
+    model.train()
 
+    #compile the model if requested
+    if compileModel:
+        print("Compiling model")
+        #required for mps compat
+        if torch.mps.is_available():
+            torch._dynamo.config.suppress_errors = True
+        torch.set_float32_matmul_precision('high')
+        model = torch.compile(model)#,mode="max-autotune")
+
+    return model, optimizer
 
 def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses):
     fig, ax1 = plt.subplots(figsize=(5, 3))
@@ -372,7 +376,8 @@ print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0
 trainingLosses, validationLosses, tokensSeen = [],[],[]
-#minimalLearningRates, peakLearningRates = stepLearningRateForBatches(len(inputPaths),p_peakLearningRate,p_minimalLearningRate)
+
+model, optimizer = loadModelForTraining(p_modelName,trainingConfig,p_loadModelFromCheckpoint,p_minimalLearningRate,p_weightDecay,p_compileModel)
 
 era = 0
 for inputPath in inputPaths:
@@ -444,8 +449,8 @@ for inputPath in inputPaths:
         trainingDataLoader=trainingDataLoader,
         validationDataLoader=validationDataLoader,
         tokenizer=tokenizer,
-        minimalLearningRate =p_minimalLearningRate, #minimalLearningRates[dataFileProcessedIdx],
-        peakLearningRate=p_peakLearningRate, #peakLearningRates[dataFileProcessedIdx],
+        minimalLearningRate =p_minimalLearningRate,
+        peakLearningRate=p_peakLearningRate,
         warmupSteps=p_warmupSteps,    
         weightDecay=p_weightDecay,
         device=device,
@@ -455,7 +460,9 @@ for inputPath in inputPaths:
         evaluationIterations=p_evaluationIterations,
         startContext=p_startContext,
         compileModel=p_compileModel,
-        era=era
+        era=era,
+        model=model,
+        optimizer=optimizer
     )
     dataFileProcessedIdx += 1
     #tokensSeen.extend(runTokensSeen)

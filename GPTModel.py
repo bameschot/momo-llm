@@ -16,6 +16,8 @@ class GPTModel(nn.Module):
         #create the dropout embedding
         if self.config[DROPOUT_EMBEDDING_RATE] > 0:
             self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
+        else:
+            self.dropoutEmbeddings = None
         #create the transformer blocks
         self.tranformerBlocks = nn.ModuleList(
             [GPTTransformerBlock(config) for _ in range(config[N_LAYERS])]
@@ -35,17 +37,17 @@ class GPTModel(nn.Module):
         #embeddings and positional embeddings for the input, ensures that the embeddings are on the correct device
         inTokenEmbeddings = self.tokenEmbeddings(inIndex)
         if useCache:
-            positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.long)
+            positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.int)
             self.currentPos+=sequenceLength
         else:
-            positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.long)
+            positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.int)
         inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
 
         #modify the embeddings with the positional embeddings
         x = inTokenEmbeddings + inPositionalEmbeddings
         
         #apply dropout
-        if hasattr(self,'dropoutEmbeddings'):
+        if self.dropoutEmbeddings:
             x = self.dropoutEmbeddings(x) 
         
         #apply the transformer blocks
@@ -87,19 +89,21 @@ class GPTTransformerBlock(nn.Module):
         self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
         if config[DROPOUT_SHORTCUT_RATE] > 0:
             self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
+        else: 
+            self.dropoutShortcut = None
 
     def forward(self,x, useCache=False):
         shortcut = x
         x = self.normalizationLayer1(x)
         x = self.attention(x,useCache)
-        if hasattr(self,'dropoutShortcut'):
+        if self.dropoutShortcut:
             x = self.dropoutShortcut(x)
         x = x + shortcut
 
         shortcut = x
         x = self.normalizationLayer2(x)
         x = self.feedForward(x)
-        if hasattr(self,'dropoutShortcut'):
+        if self.dropoutShortcut:
             x = self.dropoutShortcut(x)
         x = x + shortcut
 

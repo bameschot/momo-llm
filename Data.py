@@ -156,16 +156,17 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
 
                 if lineCount % 100000 == 0:
                     print(f'{inputFilePath}: read {lineCount} lines, tokens={len(tokens)}')
+
+                #if the token list exceeds the cutoff point write it to a batch file
+                if(len(tokens) > tokenListCutoff):
+                    outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'
+                    picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
+                    print(f"Writing processed output file: {outputPath}")
+                    outputFileIndex = outputFileIndex+1
+                    tokens.clear()
+                    gc.collect()
             
             fileIdx+=1
-
-        #if the token list exceeds the cutoff point write it to a batch file
-        if(len(tokens) > tokenListCutoff):
-            outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'
-            picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
-            print(f"Writing processed output file: {outputPath}")
-            outputFileIndex = outputFileIndex+1
-            tokens.clear()
     
     #write the remainder of the tokens to the file
     outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'

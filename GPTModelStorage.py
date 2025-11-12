@@ -33,8 +33,15 @@ def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
     model = GPTModel(config).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
     model.train()
+
     optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
     optimizer.load_state_dict(modelData["OptimizerStateDict"])
+
+    # training after loading is slower presumably due to this: https://github.com/Lightning-AI/pytorch-lightning/issues/19955
+    for _, vv in optimizer.state.items():
+        if "step" in vv and vv["step"].device.type != "cpu":
+            vv["step"] = vv["step"].cpu()
+
     return model, optimizer
 
 def storeModel(modelName,model,isCompiled=False):
