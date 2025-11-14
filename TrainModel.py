@@ -34,10 +34,10 @@ parser.add_argument('--shuffleInputFiles', action='store_true',help= "indicates 
 parser.add_argument("--batchSize", type=int, default=40, help="The batch size of the dataloader")
 parser.add_argument("--stride", type=int, default=None, help="The stride of the dataloader")
 
-parser.add_argument("--minimalLearningRate", type=float, default=0.0001, help="The lowest learning rate that the learning coefficient decay moves towards")
-parser.add_argument("--peakLearningRate", type=float, default=0.0004, help="The learning rate that the warmup increases towards")
+parser.add_argument("--minimalLearningRate", type=float, default=0.004, help="The lowest learning rate that the learning coefficient decay moves towards")
+parser.add_argument("--peakLearningRate", type=float, default=0.001, help="The learning rate that the warmup increases towards")
 parser.add_argument("--warmupSteps", type=int, default=1000, help="The amount of steps that the training spends in the warmup phase")
-parser.add_argument("--weightDecay", type=float, default=0.1, help="The decay in weights used by the AdamW optimizer")
+parser.add_argument("--weightDecay", type=float, default=0.0004, help="The decay in weights used by the AdamW optimizer")
 
 parser.add_argument("--numberOfEpochs", type=int, default=10, help="The number of epochs (complete dataset passes) to train for")
 parser.add_argument("--evaluationStepFrequency", type=int, default=200, help="The interval in steps for calculating and printing training progress")
@@ -162,7 +162,7 @@ def trainModel(
         ):          
     
     if(model is None or optimizer is None):
-        model, optimizer = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,minimalLearningRate,weightDecay,compileModel)
+        model, optimizer = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,peakLearningRate,weightDecay,compileModel)
 
     return trainModelMedium(
         modelName=modelName,
@@ -377,7 +377,7 @@ print (f"Selected training files: {inputPaths}")
 dataFileProcessedIdx = 0
 trainingLosses, validationLosses, tokensSeen = [],[],[]
 
-model, optimizer = loadModelForTraining(p_modelName,trainingConfig,p_loadModelFromCheckpoint,p_minimalLearningRate,p_weightDecay,p_compileModel)
+model, optimizer = loadModelForTraining(p_modelName,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
 
 era = 0
 for inputPath in inputPaths:
