@@ -171,9 +171,9 @@ cython_debug/
 .pypirc
 
 #custom
-**/input-data/**
-**/processed-data/**
-**/vocabulary/**
+**/input-data/**/**/
+**/processed-data/**/
+**/vocabulary/**/
 
 **/models/**
 **/loss-plot.pdf
