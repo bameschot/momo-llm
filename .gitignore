@@ -173,9 +173,9 @@ cython_debug/
 #custom
 **/input-data/**/**/
 **/processed-data/**/
-**/vocabulary/**/
+**/vocabulary/**/**/
+**/models/**/**/
 
-**/models/**
 **/loss-plot.pdf
 .DS_Store
 .DS_Store
