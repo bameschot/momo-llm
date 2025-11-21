@@ -179,3 +179,4 @@ cython_debug/
 **/loss-plot.pdf
 .DS_Store
 .DS_Store
+vocabulary/sp-training.txt

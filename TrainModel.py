@@ -213,7 +213,6 @@ def trainModelMedium(
 
     #iterate over the requested amount of epochs (complete batch runs)
     for epoch in range(numberOfEpochs):
-        model.train(),
         startEpochTs = time.time() * 1000.0
 
         #iterate over the batches in steps
@@ -394,6 +393,9 @@ for inputPath in inputPaths:
     splitIdx = int(p_trainRatio * totalTokens)
     trainingData = data[:splitIdx]
     validationData = data[splitIdx:]
+
+    #Print a sample
+    print(f"training data sample {tokenizer.decode(data[0:100])}")    
 
     #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
     del data
