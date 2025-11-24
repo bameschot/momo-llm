@@ -1,0 +1,3 @@
+python3 TrainModel.py --modelName="conv-english-lc-shuffle-16k-8m" --inputData="processed-data/conversation-english-chunked-16k-small/**.bin" --shuffleInputFiles --device="cuda" --startContext="What about dinner in central park new york tonight? " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=30  --numberOfEpochs=1 --peakLearningRate=0.0009 --minimalLearningRate=0.00009 --weightDecay=0.00005 --trainingModelConfigName="SIMP_ENG_LC_16K_CONFIG_XS_386_12L_6H_174E"
+
+python3 RunModel.py --modelname="conv-english-lc-shuffle-16k-8m" --device="cuda" --temperature=1.2 --topK=150 --tokensToGenerate=250  --prompt="want to get some cofee? yes please where in central park, let's go to the park" --forceLowerCase
