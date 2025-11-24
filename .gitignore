@@ -180,3 +180,5 @@ cython_debug/
 .DS_Store
 .DS_Store
 vocabulary/sp-training.txt
+__azurite_db_queue__.json
+__azurite_db_queue_extent__.json

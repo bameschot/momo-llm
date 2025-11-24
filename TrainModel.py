@@ -135,7 +135,7 @@ def generateAndPrintSample(model, tokenizer, device, startContext):
     with torch.no_grad():
         tokenIds = generateText(model,encoded,100)
         decodedText = tokensToText(tokenIds,tokenizer).replace("\n"," ")
-        print(f"training text sample: {decodedText}")
+        print(f"generated text sample; {decodedText}")
     model.train()
 
 def trainModel(
@@ -395,7 +395,7 @@ for inputPath in inputPaths:
     validationData = data[splitIdx:]
 
     #Print a sample
-    print(f"training data sample {tokenizer.decode(data[0:100])}")    
+    print(f"training data sample; {tokenizer.decode(data[0:100])}")    
 
     #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
     del data
@@ -467,6 +467,13 @@ for inputPath in inputPaths:
         optimizer=optimizer
     )
     dataFileProcessedIdx += 1
+
+    # explicitly unload the dataloaders
+    del trainingDataLoader
+    del validationDataLoader
+    gc.collect()
+    
+
     #tokensSeen.extend(runTokensSeen)
     #trainingLosses.extend(runTrainingLosses)
     #validationLosses.extend(runValidationLosses)
