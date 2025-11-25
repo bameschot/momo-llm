@@ -231,7 +231,7 @@ class GPTTokenizedDatasetV1(Dataset):
         self.input_ids = []
         self.target_ids = []
 
-        dataType = torch.int #torch.int32 if vocabSize <= 32767 else torch.int32
+        dataType = torch.long #torch.int32 if vocabSize <= 32767 else torch.int32
 
         # Use a sliding window to chunk the book into overlapping sequences of max_length
         for i in range(0, len(tokens) - max_length, stride):
