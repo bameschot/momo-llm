@@ -219,7 +219,7 @@ def trainModelMedium(
         epochSteps=0
         for inputBatch,targetBatch in trainingDataLoader:
 
-            if device == 'cuda':
+            if device == torch.device("cuda"):
                 print('empty cuda cache')
                 torch.cuda.empty_cache()
 
