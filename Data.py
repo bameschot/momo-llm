@@ -79,6 +79,7 @@ def trainSentencePieceTokenizer(
 def processRawTextLine(line,forceLowerCase=False):
     line = line.strip().replace('\n\n','\n')
     line = line.strip().replace('-','')
+    line = line.strip().replace('""','"')
     if forceLowerCase:
         line = line.lower()
 
