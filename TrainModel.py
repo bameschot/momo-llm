@@ -144,6 +144,7 @@ def trainModel(
         trainingDataLoader, 
         validationDataLoader, 
         device, 
+        deviceName,
         tokenizer,
         loadModelFromCheckpoint=True,
         minimalLearningRate = 0.0001,
@@ -171,6 +172,7 @@ def trainModel(
         validationDataLoader=validationDataLoader,
         optimizer=optimizer,
         device=device,
+        deviceName=deviceName,
         numberOfEpochs=numberOfEpochs,
         evaluationStepFrequency=evaluationStepFrequency,
         checkpointStepStorageFrequency=checkpointStepStorageFrequency,
@@ -190,7 +192,8 @@ def trainModelMedium(
         trainingDataLoader, 
         validationDataLoader, 
         optimizer, 
-        device, 
+        device,
+        deviceName, 
         tokenizer,
         minimalLearningRate = 0.0001,
         peakLearningRate=0.0004,
@@ -219,10 +222,12 @@ def trainModelMedium(
         epochSteps=0
         for inputBatch,targetBatch in trainingDataLoader:
 
-            if device == torch.device("cuda"):
-                print('empty cuda cache')
+            # garbage collect & empty cuda/mps caches before each step
+            if "cuda" in deviceName:
                 torch.cuda.empty_cache()
-
+            elif "mps" in deviceName:
+                torch.mps.empty_cache()
+            gc.collect()
 
             epochSteps+=1
             startTs = time.time() * 1000.0
@@ -356,12 +361,16 @@ def stepLearningRateForBatches(numFiles,peakLearningRate,minimalLearningRate):
 if p_device is None:
     if torch.cuda.is_available():
        device = torch.device("cuda:0")
+       deviceName = "cuda"
     elif torch.mps.is_available():
         device = torch.device("mps:0")
+        deviceName = "mps"
     else:
         device = torch.device("cpu")
+        deviceName = "cpu"
 else:
     device = torch.device(p_device)
+    deviceName = p_device
 
 trainingConfig = modelConfigs[p_trainingConfigName]
 
@@ -460,6 +469,7 @@ for inputPath in inputPaths:
         warmupSteps=p_warmupSteps,    
         weightDecay=p_weightDecay,
         device=device,
+        deviceName=deviceName,
         numberOfEpochs=p_numberOfEpochs,
         evaluationStepFrequency=p_evaluationStepFrequency,
         checkpointStepStorageFrequency=p_checkpointStepStorageFrequency,
