@@ -208,7 +208,6 @@ def trainModelMedium(
         era=0
         ):
     #set start data
-    trainingLosses, validationLosses, trackTokensSeen = [],[],[]
     tokensSeen, globalStep = -1,0
     totalTrainingSteps = numberOfEpochs * len(trainingDataLoader)
     learningRateIncrement = (peakLearningRate - minimalLearningRate) / warmupSteps
@@ -268,11 +267,8 @@ def trainModelMedium(
             if(globalStep%evaluationStepFrequency==0):
                 #evaluate the model and get the training loss and validation loss
                 trainingLoss, validationLoss = evaluateModel(model,trainingDataLoader,validationDataLoader, device, evaluationIterations)
-                trainingLosses.append(trainingLoss)
-                validationLosses.append(validationLoss)
 
                 #print the current results
-                trackTokensSeen.append(tokensSeen)
                 print(f"Epoch: [{era:02d}|{epoch:02d}/{numberOfEpochs:02d}] {(epochSteps/len(trainingDataLoader)*100):06.2f}%; (Step {globalStep:010d}): Training Loss {trainingLoss:.3f} Validation Loss {validationLoss:.3f}; avg. Step processing time {timePerStep:.3f} ms; learning rate: {learningRate:.10f}")
                 
 
@@ -289,15 +285,11 @@ def trainModelMedium(
         #After each epoch print a sample of the model's output
         generateAndPrintSample(model,tokenizer,device,startContext)
         
-        ##after each epoch plot progress
-        #epochs_tensor = torch.linspace(0, numberOfEpochs, len(trainingLosses))
-        #plot_losses(epochs_tensor, tokensSeen, trainingLosses, validationLosses)
-
     #after all epochs return the training losses and validation losses
     storeModel(modelName,model,isCompiled)
     storeCheckPoint(modelName,model,optimizer,isCompiled)
     print(f"Storing model: {modelName}")
-    return trainingLosses, validationLosses, trackTokensSeen, learningRate    
+    return learningRate    
 
 def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learningRate, weightDecay, compileModel):
     if loadModelFromCheckpoint:
@@ -387,7 +379,6 @@ else:
 print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0
-trainingLosses, validationLosses, tokensSeen = [],[],[]
 
 model, optimizer = loadModelForTraining(p_modelName,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
 
@@ -457,7 +448,7 @@ for inputPath in inputPaths:
         loadModelFromCheckpoint = p_loadModelFromCheckpoint
 
     print(f"\n[${era:02d}/{len(inputPaths):02d}]Start training for {inputPath} with peak learning rate: {p_peakLearningRate}")
-    runTrainingLosses, runValidationLosses, runTokensSeen, learningRate = trainModel(
+    learningRate = trainModel(
         modelName=p_modelName,
         modelConfig=trainingConfig,
         loadModelFromCheckpoint=loadModelFromCheckpoint,
