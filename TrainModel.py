@@ -305,8 +305,8 @@ def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learnin
     if compileModel:
         print("Compiling model")
         #required for mps compat
-        if  "is_available" in dir(torch.mps) and torch.mps.is_available():
-            torch._dynamo.config.suppress_errors = True
+        #if  "is_available" in dir(torch.mps) and torch.mps.is_available():
+        torch._dynamo.config.suppress_errors = True
         torch.set_float32_matmul_precision('high')
         model = torch.compile(model)#,mode="max-autotune")
 
