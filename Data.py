@@ -78,6 +78,14 @@ def trainSentencePieceTokenizer(
 
 def processRawTextLine(line,forceLowerCase=False):
     line = line.strip().replace('\n\n','\n')
+    line = line.strip().replace('-','')
+    if forceLowerCase:
+        line = line.lower()
+
+    return line
+
+def processRawTextLineWithConfig(line,forceLowerCase=False):
+    line = line.strip().replace('\n\n','\n')
     if forceLowerCase:
         line = line.lower()
 
@@ -152,6 +160,8 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
                 line = input.readline()
                 if line == '':
                     break
+                
+                line += ' '
                 tokens.extend(tokenizer.encode(processRawTextLine(line,forceLowerCase)))
 
                 if lineCount % 100000 == 0:
