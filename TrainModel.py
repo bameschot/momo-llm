@@ -218,6 +218,12 @@ def trainModelMedium(
         #iterate over the batches in steps
         epochSteps=0
         for inputBatch,targetBatch in trainingDataLoader:
+
+            if device == 'cuda':
+                print('empty cuda cache')
+                torch.cuda.empty_cache()
+
+
             epochSteps+=1
             startTs = time.time() * 1000.0
             #reset the loss gradients
@@ -252,8 +258,6 @@ def trainModelMedium(
             
             endTs = time.time() * 1000.0
             timePerStep=(endTs-startTs)
-
-            #gc.collect()
 
             #if the current step reaches the evaluation fequency
             if(globalStep%evaluationStepFrequency==0):
