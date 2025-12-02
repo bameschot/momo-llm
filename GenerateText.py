@@ -34,7 +34,7 @@ def simpleTextGeneration(model, idx, maxNewTokens):
     
     return idx
 
-def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,printNextToken=False,tokenizer=None):
+def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     for i in range(maxNewTokens):
         #ensure idx is no larger than the model supported max context size

@@ -5,6 +5,7 @@ import pickle
 import gzip
 from pathlib import Path
 
+from DataPreProcessing import findReplacementDefinition, loadReplacementDefinitions, loadReplacementFile, processRawTextLineWithReplacements
 from Tokenizers import *
 
 import sentencepiece
@@ -60,6 +61,16 @@ def trainSentencePieceTokenizer(
     modelDir = f"{processedOutputFileDir}/{fullModelName}"
     Path(f"{modelDir}").mkdir(parents=True, exist_ok=True)
 
+    pad_piece='[PAD]',
+    unk_piece='[UNK]',
+    bos_piece='[BOS]',
+    eos_piece='[EOS]'
+    if forceLowerCase:
+        pad_piece='[pad]',
+        unk_piece='[unk]',
+        bos_piece='[bos]',
+        eos_piece='[eos]'
+
     sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}.txt',
                                 model_prefix=f'{modelDir}/{fullModelName}',
                                 model_type="bpe",
@@ -74,19 +85,22 @@ def trainSentencePieceTokenizer(
                                 train_extremely_large_corpus=True,
                                 unk_surface=r" \342\201\207 ",
                                 normalization_rule_name="identity",
+                                pad_id=0,                
+                                unk_id=1,
+                                bos_id=2,
+                                eos_id=3,
+                                pad_piece='[pad]',
+                                unk_piece='[unk]',
+                                bos_piece='[bos]',
+                                eos_piece='[eos]', 
                                 max_sentence_length=300000)    
 
 def processRawTextLine(line,forceLowerCase=False):
     line = line.strip().replace('\n\n','\n')
     line = line.strip().replace('-','')
+    line = line.strip().replace('<|endoftext|>','[EOS]')
     line = line.strip().replace('""','"')
-    if forceLowerCase:
-        line = line.lower()
-
-    return line
-
-def processRawTextLineWithConfig(line,forceLowerCase=False):
-    line = line.strip().replace('\n\n','\n')
+    
     if forceLowerCase:
         line = line.lower()
 
@@ -95,64 +109,29 @@ def processRawTextLineWithConfig(line,forceLowerCase=False):
 def isFile(path):
     return os.path.isfile(path)
 
-def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,maintainLineBreaks=False,forceLowerCase=False): 
-    print(f'Creating a vocabulary for files: {inputFilePaths}')
-    Path(f"{processedOutputFileDir}").mkdir(parents=True, exist_ok=True)
 
-    rawVocabulary = set()
-    with open(f'{processedOutputFileDir}/{processedOutputFileName}.txt','w+',encoding = "utf-8") as joinedOutput:
-        fileIdx = 0
-        for inputFilePath in inputFilePaths: 
-            if os.path.isdir(inputFilePath):
-                continue
 
-            print(f'Reading {inputFilePath}')
-            with open(inputFilePath,"r",encoding = "utf-8") as input:
-                text = ""
-                
-                #read the whole file in one go to avoid ugly midsentence/word breaks
-                while True: 
-                    line = input.readline()
-                    if line == '':
-                        break
-                    text += " "
-                    text += processRawTextLine(line,forceLowerCase)
-                    if maintainLineBreaks:
-                        text+='\n'
-
-                print(f"{inputFilePath} text size: {len(text)}")
-                
-                #split text into tokens
-                for token in splitAndStripTextIntoTokens(text):
-                    rawVocabulary.add(token)
-
-                #write the text to the joined output with the end of text technical token
-                if fileIdx > 0:
-                    joinedOutput.write(f'\n{END_OF_TEXT_VOCAB_WORD}\n')
-                joinedOutput.write(text.strip())
-                fileIdx+=1
-
-    #Add the technical tokens to the end vocabulary
-    rawVocabulary.add(UKNOWN_VOCAB_WORD)
-    rawVocabulary.add(END_OF_TEXT_VOCAB_WORD)
-    vocabulary = {token:integer for integer,token in enumerate(sorted(rawVocabulary))}
-    return vocabulary
-
-def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=500,forceLowerCase=False): 
+def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,partSizeMb=50,forceLowerCase=False,preserveLineFeed=True): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
 
 
-    tokenListCutoff = partSizeMb*1048576/4 #int
+    tokenListCutoff = partSizeMb*1024*1024 #int
     fileIdx = 0
     outputFileIndex = 0
-    tokens = []
+    text = ""
+    replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY)
+
     for inputFilePath in inputFilePaths: 
         if os.path.isdir(inputFilePath):
             continue
 
         print(f'Reading {inputFilePath}')
         with open(inputFilePath,"r",encoding = "utf-8") as input:
+
+            replacementDefinition = findReplacementDefinition(inputFilePath,replacementDefinitions)
+            if replacementDefinition:
+                print(f'using replacement definition: {replacementDefinition}')
             
             #read the whole file and tokenize line by line
             lineCount = 0
@@ -162,8 +141,63 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
                 if line == '':
                     break
                 
-                line += ' '
-                tokens.extend(tokenizer.encode(processRawTextLine(line,forceLowerCase)))
+                text+= processRawTextLineWithReplacements(line,forceLowerCase,replacementDefinition) + ('\n' if preserveLineFeed else '')
+
+                if lineCount % 100000 == 0:
+                    print(f'{inputFilePath}: read {lineCount} lines, tokens={len(text)}')
+
+                #if the token list exceeds the cutoff point write it to a batch file
+                if(len(text) > tokenListCutoff):
+                    outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.txt'
+                    print(f"Writing processed output file: {outputPath}")
+                    with open(outputPath,'w',encoding = "utf-8") as output:
+                        print('writing output file: '+output.name)
+                        output.write(text)
+                    outputFileIndex = outputFileIndex+1
+                    text = ""
+                    gc.collect()
+            
+            fileIdx+=1
+    
+    #write the remainder of the tokens to the file
+    outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.txt'
+    with open(outputPath,'w',encoding = "utf-8") as output:
+        print('writing output file: '+output.name)
+        output.write(text)
+    print(f"Writing final processed output file: {outputPath}")
+    
+
+def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=50,forceLowerCase=False): 
+    print(f'Creating a binary tokenizer for files: {inputFilePaths}')
+    Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
+
+
+    tokenListCutoff = partSizeMb*1048576/4 #int
+    fileIdx = 0
+    outputFileIndex = 0
+    tokens = []
+    replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY)
+
+    for inputFilePath in inputFilePaths: 
+        if os.path.isdir(inputFilePath):
+            continue
+
+        print(f'Reading {inputFilePath}')
+        with open(inputFilePath,"r",encoding = "utf-8") as input:
+
+            replacementDefinition = findReplacementDefinition(inputFilePath,replacementDefinitions)
+            if replacementDefinition:
+                print(f'using replacement definition: {replacementDefinition}')
+            
+            #read the whole file and tokenize line by line
+            lineCount = 0
+            while True: 
+                lineCount+=1
+                line = input.readline()
+                if line == '':
+                    break
+                
+                tokens.extend(tokenizer.encode(processRawTextLineWithReplacements(line,forceLowerCase,replacementDefinition)))
 
                 if lineCount % 100000 == 0:
                     print(f'{inputFilePath}: read {lineCount} lines, tokens={len(tokens)}')
@@ -183,9 +217,6 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
     outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'
     picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
     print(f"Writing final processed output file: {outputPath}")
-    
-    vocabulary = {}
-    return vocabulary
 
 def picleTokenListToGzipBin(tokens,filePath):
     with gzip.open(filePath,'wb+') as joinedCompressedOutput:

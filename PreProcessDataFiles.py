@@ -44,7 +44,6 @@ if p_isTokenized:
     tokenizer = initializeTokenizer(p_tokenizer,p_vocabulary)
     preprocessInputDataAsTokens(readInputFilePaths(p_inputData),p_outputDirectory,p_outputFileName,tokenizer,p_outputBatchSizeMb,forceLowerCase)
 else:
-    vocab = preprocessInputDataAsText(readInputFilePaths(p_inputData),p_outputDirectory,p_outputFileName,False,forceLowerCase)
-    print(f"vocab size {len(vocab)}")
-
+    preprocessInputDataAsText(readInputFilePaths(p_inputData),p_outputDirectory,p_outputFileName,p_outputBatchSizeMb,forceLowerCase)
+    
 print("Done preprocessing")
