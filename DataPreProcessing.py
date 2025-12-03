@@ -28,13 +28,16 @@ def loadReplacementFile(fileName:str):
         line = f.readline()
         replacements = list()
         while(len(line)>0):
-            split = line[:-1].split(SPLIT_REPLACEMENT_DEFINITION)
-            source = split[0]
-            target = '' if len(split) == 1 else split[1]
+            if line[0] != '#':  
+                split = line[:-1].split(SPLIT_REPLACEMENT_DEFINITION)
+                source = split[0]
+                target = '' if len(split) == 1 else split[1]
 
-            print(f'loading replacement for {fileName}: {source}-->{target}')
+                print(f'loading replacement for {fileName}: {source}-->{target}')
+                replacements.append((source,target))
+            else: 
+                print(f'commented replacement for {fileName}: {line[:-1]}')
 
-            replacements.append((source,target))
             line = f.readline()
 
     return replacements
@@ -44,15 +47,11 @@ def loadReplacementFiles(rootFolder):
 
 
 def processRawTextLineWithReplacements(line,forceLowerCase=False,replacements:list=list()):
-    
-    line.strip()
-    
     if replacements:
         for replacement in replacements:
-            # print(f'{line} == replacing {replacement[0]} with {replacement[1]}')
             # line = line.replace(replacement[0],replacement[1])
-                
             line = re.sub(replacement[0],replacement[1],line)
+            # print(f'{line} == replaced {replacement[0]} with {replacement[1]}')
         
     if forceLowerCase:
         line = line.lower()

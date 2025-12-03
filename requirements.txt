@@ -3,3 +3,4 @@ torch --extra-index-url https://download.pytorch.org/whl/nightly/cpu #pip3 insta
 tiktoken
 sentencepiece
 matplotlib
+ollama

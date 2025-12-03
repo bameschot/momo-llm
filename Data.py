@@ -135,13 +135,17 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
             
             #read the whole file and tokenize line by line
             lineCount = 0
+            previousLine = ''
             while True: 
                 lineCount+=1
                 line = input.readline()
                 if line == '':
                     break
                 
-                text+= processRawTextLineWithReplacements(line,forceLowerCase,replacementDefinition) + ('\n' if preserveLineFeed else '')
+                processedLine = processRawTextLineWithReplacements(line,forceLowerCase,replacementDefinition) + ('\n' if preserveLineFeed else '')
+                if processedLine!=previousLine:
+                    text+= processedLine
+                    previousLine = processedLine
 
                 if lineCount % 100000 == 0:
                     print(f'{inputFilePath}: read {lineCount} lines, tokens={len(text)}')
@@ -191,14 +195,19 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
             
             #read the whole file and tokenize line by line
             lineCount = 0
+            previousLine=''
             while True: 
                 lineCount+=1
                 line = input.readline()
                 if line == '':
                     break
-                
-                tokens.extend(tokenizer.encode(processRawTextLineWithReplacements(line,forceLowerCase,replacementDefinition)))
 
+                processedLine = processRawTextLineWithReplacements(line,forceLowerCase,replacementDefinition)
+                if processedLine!=previousLine:
+                    tokens.extend(tokenizer.encode(processedLine))
+                    previousLine = processedLine
+                
+            
                 if lineCount % 100000 == 0:
                     print(f'{inputFilePath}: read {lineCount} lines, tokens={len(tokens)}')
 
