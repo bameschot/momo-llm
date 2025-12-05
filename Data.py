@@ -61,14 +61,10 @@ def trainSentencePieceTokenizer(
     modelDir = f"{processedOutputFileDir}/{fullModelName}"
     Path(f"{modelDir}").mkdir(parents=True, exist_ok=True)
 
-    pad_piece='[PAD]',
-    unk_piece='[UNK]',
-    bos_piece='[BOS]',
+    bos_piece='[BOS]'
     eos_piece='[EOS]'
     if forceLowerCase:
-        pad_piece='[pad]',
-        unk_piece='[unk]',
-        bos_piece='[bos]',
+        bos_piece='[bos]'
         eos_piece='[eos]'
 
     sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}.txt',
@@ -85,14 +81,11 @@ def trainSentencePieceTokenizer(
                                 train_extremely_large_corpus=True,
                                 unk_surface=r" \342\201\207 ",
                                 normalization_rule_name="identity",
-                                pad_id=0,                
-                                unk_id=1,
+                                user_defined_symbols=[eos_piece,bos_piece],
                                 bos_id=2,
                                 eos_id=3,
-                                pad_piece='[pad]',
-                                unk_piece='[unk]',
-                                bos_piece='[bos]',
-                                eos_piece='[eos]', 
+                                bos_piece=bos_piece,
+                                eos_piece=eos_piece, 
                                 max_sentence_length=300000)    
 
 def processRawTextLine(line,forceLowerCase=False):

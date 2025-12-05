@@ -14,7 +14,7 @@ from GPTModelStorage import *
 #Parameters
 ########################################
 parser = argparse.ArgumentParser(
-        description="Runs a GPT model"
+        description="Runs a momo-llm model"
     )
 parser.add_argument("--modelname", type=str,default="TestEconomy_small_r", help="The name of the model to run, model must be present in./models/<model-name>/<model-name>.model")
 parser.add_argument("--tokenizer", type=str,default="gpt2", help="The name of the tokenizer to parse input and output in")
@@ -103,4 +103,5 @@ print("-----------------------")
 print("Generated")
 print("-----------------------")
 print(outputText)
+# print(outputTokens)
 print(f"Runtime: {runtimeMs} ms. T/Ps: {(p_tokensToGenerate/(runtimeMs/1000.0))} [{outputTokens.shape[1]} tokens]")

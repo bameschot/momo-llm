@@ -68,19 +68,19 @@ def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printN
             #select the most probable next word, argmax returns the index of the higest probability which corresponds to a vocabulary index
             idxNext = torch.argmax(logits,dim=-1,keepdim=True)
 
-        #if end of sequence token is detected end generation
-        if idxNext == eosId:
-            break
-
         #append the chosen token to the result
         idx = torch.cat((idx,idxNext),dim=1)
         if printNextToken and tokenizer is not None:
             print(tokensToText(tokens=idxNext,tkz=tokenizer),end="",flush=True)
+
+        #if end of sequence token is detected end generation
+        if idxNext == eosId:
+            break
     
     return idx
 
 
-def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=None,printNextToken=False,tokenizer=None):
+def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     #no_grad ensure that no backwards passes are performed when running the model, in this mode inference is performed efficiently
     with torch.no_grad():
@@ -120,14 +120,15 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=No
                 #select the most probable next word, argmax returns the index of the higest probability which corresponds to a vocabulary index
                 idxNext = torch.argmax(logits,dim=-1,keepdim=True)
 
-            #if end of sequence token is detected end generation
-            if idxNext == eosId:
-                break
 
             #append the chosen token to the result
             idx = torch.cat((idx,idxNext),dim=1)
             if printNextToken and tokenizer is not None:
-                print(tokensToText(tokens=idxNext,tkz=tokenizer),end="",flush=True)
+                print(str(idxNext[0].item())+': '+tokensToText(tokens=idxNext,tkz=tokenizer),end="\n",flush=True)
+            
+            #if end of sequence token is detected end generation
+            if idxNext == eosId:
+                break
             
             # if the generated text exceeds this generation epoch the context size reset the model and feed it half the previously generated context to start with
             # this prevents the model from generating errors when exceeding the context size

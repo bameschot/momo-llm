@@ -57,6 +57,8 @@ class GPT2Tokenizer:
 class SentencePieceTokenizer:
     def __init__(self,modelFile):
         self.tokenizer = sentencepiece.SentencePieceProcessor(model_file=modelFile)
+        self.tokenizer.eos_id = 3
+        #self.tokenizer.SetEncodeExtraOptions('eos')        
 
     def encode(self,text):
         return self.tokenizer.encode(text)

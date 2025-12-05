@@ -24,7 +24,7 @@ from matplotlib.ticker import MaxNLocator
 #Parameters
 ########################################
 parser = argparse.ArgumentParser(
-        description="Trains a GPT model"
+        description="Trains a momo-llm model"
     )
 parser.add_argument("--modelName", type=str,default="TestEconomy_small_r", help="The name of the model to train")
 parser.add_argument('--newModel', action='store_false',help= "indicates if a new model should be trained, if not the model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with the same name")
@@ -135,7 +135,7 @@ def generateAndPrintSample(model, tokenizer, device, startContext):
     with torch.no_grad():
         tokenIds = generateText(model,encoded,100)
         decodedText = tokensToText(tokenIds,tokenizer).replace("\n"," ")
-        print(f"generated text sample; {decodedText}")
+        print(f"generated text sample; {decodedText} == {str(tokenIds)}")
     model.train()
 
 def trainModel(
@@ -223,9 +223,11 @@ def trainModelMedium(
 
             # garbage collect & empty cuda/mps caches before each step
             if "cuda" in deviceName:
-                torch.cuda.empty_cache()
+                # torch.cuda.empty_cache()
+                None
             elif "mps" in deviceName:
-                torch.mps.empty_cache()
+                # torch.mps.empty_cache()
+                None 
             gc.collect()
 
             epochSteps+=1
@@ -399,7 +401,7 @@ for inputPath in inputPaths:
     validationData = data[splitIdx:]
 
     #Print a sample
-    print(f"training data sample; {tokenizer.decode(data[0:100])}")    
+    print(f"training data sample;\n{tokenizer.decode(data[0:100])}\n{str(data[0:100])}")    
 
     #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
     del data
