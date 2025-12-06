@@ -1,5 +1,11 @@
 # How to run the training pipeline
 
+## 0. Generate training data using ollama
+- ensure that ollama is locally installed and running and has the required models downloaded
+- run to start generating training data, the script appends data unless asked not to and can be restarted ```
+python3 OllamaGenerateTestData.py --outputFileName="syntetic-english-conversations-lambda" --numberOfGenerations=10000 --model="llama3.2:3b" --system="you are a conversation generator, you generate a conversation between 2 participants and ensure you just output the conversation line by line and no other text" --prompt="generate a casual conversation between 300 and 2000 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation"
+``` 
+
 ## 1. (Optional) Add a new gpt config to the config file
 - Go to `GPTModelConfig.py` and add a new model config definition and register it to the `modelConfigs` list
 ```
