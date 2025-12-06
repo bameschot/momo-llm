@@ -90,7 +90,7 @@ for genIdx in range(p_numberOfGenerations):
     messageContent = response.message.content+'\n'
     processedContent = processRawTextLineWithReplacements(messageContent,False,replacementDefinition)
     charactersWritten += len(processedContent)
-    text += processedContent + "\n=====================\n"
+    text += processedContent + "=====================\n"
 
     if genIdx > 0 and genIdx % p_printInterval == 0:
         print(processedContent)
