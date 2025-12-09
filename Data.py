@@ -55,7 +55,7 @@ def trainSentencePieceTokenizer(
     foup = f"{processedOutputFileDir}/{processedOutputFileName}.txt"
     if not isFile(foup) or newTrainingFile:
         print("Starting a new tokenize training file")
-        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,True,forceLowerCase)
+        preprocessInputDataAsText(inputFilePaths,processedOutputFileDir,processedOutputFileName,30000,True,forceLowerCase)
 
     fullModelName = f"{vocabularyName}-{vocabSize}"
     modelDir = f"{processedOutputFileDir}/{fullModelName}"
@@ -67,7 +67,7 @@ def trainSentencePieceTokenizer(
         bos_piece='[bos]'
         eos_piece='[eos]'
 
-    sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}.txt',
+    sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-000.txt',
                                 model_prefix=f'{modelDir}/{fullModelName}',
                                 model_type="bpe",
                                 vocab_size=vocabSize,
@@ -104,7 +104,7 @@ def isFile(path):
 
 
 
-def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,partSizeMb=50,forceLowerCase=False,preserveLineFeed=True): 
+def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOutputFileName,partSizeMb=50,forceLowerCase=False,preserveLineFeed=True,useReplacementFile=True): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
 
@@ -113,7 +113,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
     fileIdx = 0
     outputFileIndex = 0
     text = ""
-    replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY)
+    replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY) if useReplacementFile else {}
 
     for inputFilePath in inputFilePaths: 
         if os.path.isdir(inputFilePath):
@@ -164,7 +164,7 @@ def preprocessInputDataAsText(inputFilePaths, processedOutputFileDir,processedOu
     print(f"Writing final processed output file: {outputPath}")
     
 
-def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=50,forceLowerCase=False): 
+def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processedOutputFileName,tokenizer,partSizeMb=50,forceLowerCase=False,useReplacementFile=True): 
     print(f'Creating a binary tokenizer for files: {inputFilePaths}')
     Path(f"{processedOutputFileDir}/{processedOutputFileName}").mkdir(parents=True, exist_ok=True)
 
@@ -173,7 +173,7 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
     fileIdx = 0
     outputFileIndex = 0
     tokens = []
-    replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY)
+    replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY) if useReplacementFile else {}
 
     for inputFilePath in inputFilePaths: 
         if os.path.isdir(inputFilePath):

@@ -171,14 +171,15 @@ cython_debug/
 .pypirc
 
 #custom
-**/input-data/**/**/
-**/processed-data/**/
-**/vocabulary/**/**/
-**/models/**/**/
+input-data/**/**/
+!input-data/synthetic-casual-conversations/**/
+processed-data/**/**
+vocabulary/**/**/
+models/**/**/
 
 **/loss-plot.pdf
 .DS_Store
 .DS_Store
-vocabulary/sp-training.txt
+vocabulary/sp-training**
 __azurite_db_queue__.json
 __azurite_db_queue_extent__.json

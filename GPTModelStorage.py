@@ -23,12 +23,33 @@ def storeCheckPoint(modelName,model,optimizer,isCompiled=False):
         f"{MODEL_FOLDER}/{modelName}/{modelName}.pth"
     )
 
+def getDataTypeFromConfig(config): 
+    # https://medium.com/data-science/pytorch-native-fp8-fedc06f1c9f7
+    dt = torch.float32
+    cfgDt = config[DEFAULT_DATA_TYPE]
+    if cfgDt == 'bfloat16':
+        dt = torch.bfloat16
+    elif cfgDt == 'float16':
+        dt = torch.float16
+    elif cfgDt == 'float8_e4m3fn':
+        dt = torch.float8_e4m3fn
+    elif cfgDt == 'float8_e4m3fnuz':
+        dt = torch.float8_e4m3fnuz
+    elif cfgDt == 'float8_e5m2':
+        dt = torch.float8_e5m2
+    elif cfgDt == 'float8_e5m2fnuz':
+        dt = torch.float8_e5m2fnuz
+    elif cfgDt == 'float8_e8m0fnu':
+        dt = torch.float8_e8m0fnu   
+
+    return dt
+
 def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
     modelData = torch.load(f"{MODEL_FOLDER}/{modelName}/{modelName}.pth",device)
     config = modelData["ModelConfig"]
     
     #this sets the default data type for all future operations based on config
-    torch.set_default_dtype(config[DEFAULT_DATA_TYPE])
+    torch.set_default_dtype(getDataTypeFromConfig(config))
 
     model = GPTModel(config).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
@@ -62,7 +83,7 @@ def loadModel(modelName,device):
     config = modelData["ModelConfig"]
 
     #this sets the default data type for all future operations based on config
-    torch.set_default_dtype(config[DEFAULT_DATA_TYPE])
+    torch.set_default_dtype(getDataTypeFromConfig(config))
 
     model = GPTModel(config).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
