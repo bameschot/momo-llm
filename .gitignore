@@ -176,6 +176,7 @@ input-data/**/**/
 processed-data/**/**
 vocabulary/**/**/
 models/**/**/
+log/**
 
 **/loss-plot.pdf
 .DS_Store

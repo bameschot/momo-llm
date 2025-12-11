@@ -9,6 +9,8 @@ import gc
 import torch
 import torch.nn as nn
 import torch.optim
+from torch.profiler import ProfilerActivity
+
 
 from Tokenizers import *
 from Data import create_tokenized_dataloader_v1,readInputFilePaths, TOKENIZER_PROCESSED_DATA_DIRECTORY
@@ -164,7 +166,12 @@ def trainModel(
     
     if(model is None or optimizer is None):
         model, optimizer = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,peakLearningRate,weightDecay,compileModel)
-
+    # with torch.profiler.profile(
+    #     activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+    #     record_shapes=True,
+    #     profile_memory=True
+    # ) as prof:
+    
     return trainModelMedium(
         modelName=modelName,
         model=model,
@@ -185,6 +192,7 @@ def trainModel(
         isCompiled=compileModel,
         era=era
     )
+    # print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
 
 def trainModelMedium(
         modelName,
@@ -214,6 +222,9 @@ def trainModelMedium(
     learningRate = minimalLearningRate
 
     #iterate over the requested amount of epochs (complete batch runs)
+    # Initialize the scaler
+    scaler = torch.GradScaler()
+    
     for epoch in range(numberOfEpochs):
         startEpochTs = time.time() * 1000.0
 
@@ -234,10 +245,14 @@ def trainModelMedium(
             startTs = time.time() * 1000.0
             #reset the loss gradients
             optimizer.zero_grad()
-            #calculate the loss gradients for the batch
-            loss = calculationLossBatch(inputBatch,targetBatch,model,device)
-            #execute the backwards pass
-            loss.backward()
+
+            # use autocast to run the omptimizer at half precision
+            with torch.autocast(device_type = deviceName, dtype = torch.bfloat16): 
+                #calculate the loss gradients for the batch
+                loss = calculationLossBatch(inputBatch,targetBatch,model,device)
+            
+            #execute the backwards pass (should be out of context)
+            scaler.scale(loss).backward() # loss.backward()
 
             #apply gradient clipping
             if(globalStep>warmupSteps):
@@ -246,7 +261,9 @@ def trainModelMedium(
                 )
 
             #update the model weights with the loss gradients
-            optimizer.step()
+            scaler.step(optimizer) # optimizer.step()
+            scaler.update()
+
             tokensSeen += inputBatch.numel()
             globalStep +=1
 
