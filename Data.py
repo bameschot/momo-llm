@@ -67,6 +67,8 @@ def trainSentencePieceTokenizer(
         bos_piece='[bos]'
         eos_piece='[eos]'
 
+    userDefinedTokens = [eos_piece,bos_piece,"'s","'ll","'re","'ve","'d","'m","n't","i'm","it's"]
+
     sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-000.txt',
                                 model_prefix=f'{modelDir}/{fullModelName}',
                                 model_type="bpe",
@@ -81,7 +83,7 @@ def trainSentencePieceTokenizer(
                                 train_extremely_large_corpus=True,
                                 unk_surface=r" \342\201\207 ",
                                 normalization_rule_name="identity",
-                                user_defined_symbols=[eos_piece,bos_piece],
+                                user_defined_symbols=userDefinedTokens,
                                 bos_id=2,
                                 eos_id=3,
                                 bos_piece=bos_piece,

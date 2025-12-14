@@ -3,3 +3,12 @@ python3 PreProcessDataFiles.py --inputData="./input-data/simpleConversations/**|
 python3 TrainModel.py --modelName="conv-english-lc-shuffle-16k-8m" --inputData="processed-data/conversation-english-chunked-16k-small/**.bin" --shuffleInputFiles --device="cuda" --startContext="What about dinner in central park new york tonight? " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=30  --numberOfEpochs=1 --peakLearningRate=0.0009 --minimalLearningRate=0.00009 --weightDecay=0.00005 --trainingModelConfigName="SIMP_ENG_LC_16K_CONFIG_XS_386_12L_6H_174E"
 
 python3 RunModel.py --modelname="conv-english-lc-shuffle-16k-8m" --device="cuda" --temperature=1.2 --topK=150 --tokensToGenerate=250  --prompt="want to get some cofee? yes please where in central park, let's go to the park" --forceLowerCase
+
+--perfect!
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --vocabSize=8000 --vocabularyName="conversational-english-8k-lc" --forceLowerCase --newTrainingFile
+
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="casual-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=100 --vocabulary="conversational-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile                 
+
+python3 TrainModel.py --modelName="english-conversations-lc-8k-8_6m" --inputData="processed-data/casual-conversations-8k/**.bin" --shuffleInputFiles --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=100  --numberOfEpochs=10 --peakLearningRate=0.005 --minimalLearningRate=0.002 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_256_6L_12H_288E" --newModel
+
+python3 ChatModel.py --modelname="english-conversations-lc-8k-8_6m" --forceLowerCase
