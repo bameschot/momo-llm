@@ -273,9 +273,7 @@ class GPTDatasetV1(Dataset):
         return self.input_ids[idx], self.target_ids[idx]
 
 class GPTTokenizedDatasetV1(Dataset):
-    def __init__(self, tokens, vocabSize, max_length, stride,device,coldDtType=torch.int,hotDtType=torch.int):
-        self.coldDtType = coldDtType
-        self.hotDtType = hotDtType
+    def __init__(self, tokens, max_length, stride,device,dtType=torch.int):
         self.input_ids = []
         self.target_ids = []
 
@@ -284,20 +282,17 @@ class GPTTokenizedDatasetV1(Dataset):
             input_chunk = tokens[i:i + max_length]
             target_chunk = tokens[i + 1: i + max_length + 1]
             if(device != None):
-                self.input_ids.append(torch.tensor(input_chunk,dtype=coldDtType).to(device))
-                self.target_ids.append(torch.tensor(target_chunk,dtype=coldDtType).to(device))
+                self.input_ids.append(torch.tensor(input_chunk,dtype=dtType).to(device))
+                self.target_ids.append(torch.tensor(target_chunk,dtype=dtType).to(device))
             else:
-                self.input_ids.append(torch.tensor(input_chunk,dtype=coldDtType))
-                self.target_ids.append(torch.tensor(target_chunk,dtype=coldDtType))
+                self.input_ids.append(torch.tensor(input_chunk,dtype=dtType))
+                self.target_ids.append(torch.tensor(target_chunk,dtype=dtType))
                 
     def __len__(self):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
-        # when getting the next item cast the current item to the hot datatype and cast the previous item back to the cold data type
-        if idx > 0:
-            self.input_ids[idx-1].type(self.coldDtType), self.target_ids[idx-1].type(self.coldDtType)
-        return self.input_ids[idx].type(self.hotDtType), self.target_ids[idx].type(self.hotDtType)
+        return self.input_ids[idx], self.target_ids[idx]
 
 
 def create_text_dataloader_v1(txt,tokenizer ,batch_size, max_length, stride,
@@ -311,10 +306,10 @@ def create_text_dataloader_v1(txt,tokenizer ,batch_size, max_length, stride,
 
     return dataloader
 
-def create_tokenized_dataloader_v1(tokens,tokenizer ,batch_size, max_length, stride,device,coldDtType=torch.int,hotDtType=torch.int,
+def create_tokenized_dataloader_v1(tokens,batch_size, max_length, stride,device,dtType,
                          shuffle=True, drop_last=True, num_workers=0):
     # Create dataset
-    dataset = GPTTokenizedDatasetV1(tokens,tokenizer.vocabSize(), max_length, stride,device,coldDtType,hotDtType)
+    dataset = GPTTokenizedDatasetV1(tokens, max_length, stride,device,dtType)
  
     # Create dataloader
     dataloader = DataLoader(

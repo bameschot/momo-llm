@@ -438,23 +438,19 @@ for inputPath in inputPaths:
     dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]
 
     if "cuda" in deviceName:
-        hotDataloaderDt = torch.long
-        coldDataloaderDt = torch.int16
+        dataloaderDtType = torch.long
     else:
-        hotDataloaderDt = torch.int
-        coldDataloaderDt = torch.int16
+        dataloaderDtType = torch.int
 
     trainingDataDevice = device if p_moveDatasetToDevice else None
     print(f"Loading data to device: {p_moveDatasetToDevice} -> {trainingDataDevice}")
     trainingDataLoader = create_tokenized_dataloader_v1(
         tokens=trainingData,
-        tokenizer=tokenizer,
         batch_size=p_batchSize,
         max_length=trainingConfig[CONTEXT_LENGTH],
         stride=dlStride,
         device=trainingDataDevice,
-        hotDtType=hotDataloaderDt,
-        coldDtType=coldDataloaderDt,
+        dtType=dataloaderDtType,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
@@ -464,13 +460,11 @@ for inputPath in inputPaths:
     print(f"Loaded training data")
     validationDataLoader = create_tokenized_dataloader_v1(
         tokens=validationData,
-        tokenizer=tokenizer,
         batch_size=p_batchSize,
         max_length=trainingConfig[CONTEXT_LENGTH],
         stride=dlStride,
         device=trainingDataDevice,
-        hotDtType=hotDataloaderDt,
-        coldDtType=coldDataloaderDt,
+        dtType=dataloaderDtType,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
