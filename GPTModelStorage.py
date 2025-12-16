@@ -31,7 +31,7 @@ def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
     dtType = getDataTypeFromConfig(config)
     torch.set_default_dtype(dtType)
 
-    model = GPTModel(config,device) #.to(device)
+    model = GPTModel(config,device).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
     model.train()
 
@@ -66,7 +66,7 @@ def loadModel(modelName,device):
     dtType = getDataTypeFromConfig(config)
     torch.set_default_dtype(dtType)
     
-    model = GPTModel(config,device) #.to(device)
+    model = GPTModel(config,device).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
     model.eval()
     return model

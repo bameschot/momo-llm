@@ -324,7 +324,7 @@ def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learnin
         print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
     else: 
         torch.set_default_dtype(getDataTypeFromConfig(modelConfig))
-        model = GPTModel(modelConfig,device) #.to(device)
+        model = GPTModel(modelConfig,device).to(device)
         print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
         optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
     
