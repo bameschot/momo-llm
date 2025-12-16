@@ -220,7 +220,10 @@ def trainModelMedium(
 
     #iterate over the requested amount of epochs (complete batch runs)
     # Initialize the scaler
-    scaler = torch.GradScaler()
+    if "cuda" in deviceName:
+        scaler = torch.GradScaler()
+    else:
+        scaler = None
     
     for epoch in range(numberOfEpochs):
         startEpochTs = time.time() * 1000.0
@@ -229,27 +232,32 @@ def trainModelMedium(
         epochSteps=0
         for inputBatch,targetBatch in trainingDataLoader:
 
-            # garbage collect & empty cuda/mps caches before each step
-            if "cuda" in deviceName:
-                # torch.cuda.empty_cache()
-                None
-            elif "mps" in deviceName:
-                # torch.mps.empty_cache()
-                None 
-            gc.collect()
+            if epochSteps % 1000 == 0:
+                # garbage collect & empty cuda/mps caches before each step
+                if "cuda" in deviceName:
+                    # torch.cuda.empty_cache()
+                    None
+                elif "mps" in deviceName:
+                    # torch.mps.empty_cache()
+                    None 
+                gc.collect()
 
             epochSteps+=1
             startTs = time.time() * 1000.0
             #reset the loss gradients
             optimizer.zero_grad()
 
-            # use autocast to run the omptimizer at half precision
-            with torch.autocast(device_type = deviceName, dtype = torch.bfloat16): 
+            if scaler != None:
+                # use autocast to run the omptimizer at half precision
+                with torch.autocast(device_type = deviceName, dtype = torch.bfloat16): 
+                    #calculate the loss gradients for the batch
+                    loss = calculationLossBatch(inputBatch,targetBatch,model,device)
+                #execute the backwards pass (should be out of context)
+                scaler.scale(loss).backward() # loss.backward()
+            else: 
                 #calculate the loss gradients for the batch
                 loss = calculationLossBatch(inputBatch,targetBatch,model,device)
-            
-            #execute the backwards pass (should be out of context)
-            scaler.scale(loss).backward() # loss.backward()
+                loss.backward()
 
             #apply gradient clipping
             if(globalStep>warmupSteps):
@@ -257,9 +265,12 @@ def trainModelMedium(
                     model.parameters(), max_norm=gradientClippingMaxNorm
                 )
 
-            #update the model weights with the loss gradients
-            scaler.step(optimizer) # optimizer.step()
-            scaler.update()
+            #update the model weights with the loss gradients, use the scaler is availabe
+            if scaler != None:
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                optimizer.step()
 
             tokensSeen += inputBatch.numel()
             globalStep +=1
