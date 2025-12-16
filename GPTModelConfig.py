@@ -812,3 +812,24 @@ modelConfigs = {
     "CONV_ENG_LC_8K_CONFIG_XS_350_6L_12H_480E": CONV_ENG_LC_8K_CONFIG_XS_350_6L_12H_480E
 
 }
+
+def getDataTypeFromConfig(config): 
+    # https://medium.com/data-science/pytorch-native-fp8-fedc06f1c9f7
+    dt = torch.float32
+    cfgDt = config[DEFAULT_DATA_TYPE]
+    if cfgDt == 'bfloat16':
+        dt = torch.bfloat16
+    elif cfgDt == 'float16':
+        dt = torch.float16
+    elif cfgDt == 'float8_e4m3fn':
+        dt = torch.float8_e4m3fn
+    elif cfgDt == 'float8_e4m3fnuz':
+        dt = torch.float8_e4m3fnuz
+    elif cfgDt == 'float8_e5m2':
+        dt = torch.float8_e5m2
+    elif cfgDt == 'float8_e5m2fnuz':
+        dt = torch.float8_e5m2fnuz
+    elif cfgDt == 'float8_e8m0fnu':
+        dt = torch.float8_e8m0fnu   
+
+    return dt

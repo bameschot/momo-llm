@@ -6,26 +6,27 @@ from GPTModelConfig import *
 from Modules import LayerNormalization, RMSNormalization, FeedForward, FeedForwardBypass, MultiHeadAttention
 
 class GPTModel(nn.Module):
-    def __init__(self,config):
+    def __init__(self,config,device):
         super().__init__()
         self.config=config
+        dtType = getDataTypeFromConfig(config)
         #create the token embedding  
-        self.tokenEmbeddings = nn.Embedding(config[VOCABULARY_SIZE],config[EMBEDDING_DIMENSION])
+        self.tokenEmbeddings = nn.Embedding(config[VOCABULARY_SIZE],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
         #create the positional embedding
-        self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION])
+        self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
         #create the dropout embedding
         if self.config[DROPOUT_EMBEDDING_RATE] > 0:
-            self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
+            self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE],dtype=dtType,device=device)
         else:
             self.dropoutEmbeddings = None
         #create the transformer blocks
         self.tranformerBlocks = nn.ModuleList(
-            [GPTTransformerBlock(config) for _ in range(config[N_LAYERS])]
+            [GPTTransformerBlock(config,dtType=dtType,device=device) for _ in range(config[N_LAYERS])]
         )
         #create the final normalization layer
-        self.finalNormalization = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
+        self.finalNormalization = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
         #create OutHead as a linear transformation
-        self.outHead = nn.Linear(config[EMBEDDING_DIMENSION],config[VOCABULARY_SIZE],bias=False)
+        self.outHead = nn.Linear(config[EMBEDDING_DIMENSION],config[VOCABULARY_SIZE],bias=False,dtype=dtType,device=device)
 
         self.currentPos = 0
 
@@ -75,20 +76,22 @@ class GPTModel(nn.Module):
 
 
 class GPTTransformerBlock(nn.Module):
-    def __init__(self,config):
+    def __init__(self,config,dtType,device):
         super().__init__()
         self.attention = MultiHeadAttention(
             config[N_HEADS], 
             config[EMBEDDING_DIMENSION], 
             config[CONTEXT_LENGTH],
             config[DROPOUT_ATTENTION_RATE],
+            dtType,
+            device,
             config[QKV_BIAS]
         )
-        self.feedForward = FeedForwardBypass(embeddingDimension=config[EMBEDDING_DIMENSION])
-        self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
-        self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION])
+        self.feedForward = FeedForwardBypass(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
+        self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
+        self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
         if config[DROPOUT_SHORTCUT_RATE] > 0:
-            self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
+            self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE],dtype=dtType,device=device)
         else: 
             self.dropoutShortcut = None
 

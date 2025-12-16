@@ -8,9 +8,6 @@ import gc
 
 import torch
 import torch.nn as nn
-import torch.optim
-from torch.profiler import ProfilerActivity
-
 
 from Tokenizers import *
 from Data import create_tokenized_dataloader_v1,readInputFilePaths, TOKENIZER_PROCESSED_DATA_DIRECTORY
@@ -315,7 +312,8 @@ def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learnin
         model,optimizer = loadCheckpoint(modelName,device,learningRate=learningRate,weightDecay=weightDecay)
         print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
     else: 
-        model = GPTModel(modelConfig).to(device)
+        torch.set_default_dtype(getDataTypeFromConfig(modelConfig))
+        model = GPTModel(modelConfig,device) #.to(device)
         print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
         optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
     
@@ -398,7 +396,6 @@ else:
 print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0
-
 model, optimizer = loadModelForTraining(p_modelName,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
 
 era = 0

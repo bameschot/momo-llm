@@ -19,27 +19,27 @@ class Swich(nn.Module):
         return x * torch.sigmoid(x)
 
 class FeedForward(nn.Module):
-    def __init__(self,embeddingDimension, expansionFactor=4):
+    def __init__(self,embeddingDimension, expansionFactor,dtType,device):
         super().__init__()
         self.layers = nn.Sequential(
             #expand
-            nn.Linear(embeddingDimension,expansionFactor * embeddingDimension),
+            nn.Linear(embeddingDimension,expansionFactor * embeddingDimension,dtype=dtType,device=device),
             #activate
             GELU(),
             #contract
-            nn.Linear(4 * embeddingDimension, embeddingDimension)
+            nn.Linear(4 * embeddingDimension, embeddingDimension,dtype=dtType,device=device)
         )
 
     def forward(self,x):
         return self.layers(x)
     
 class FeedForwardBypass(nn.Module):
-    def __init__(self,embeddingDimension):
+    def __init__(self,embeddingDimension,dtType,device):
         super().__init__()
 
-        self.layer1 = nn.Linear(embeddingDimension,embeddingDimension)
-        self.layer2 = nn.Linear(embeddingDimension,embeddingDimension)
-        self.layer3 = nn.Linear(embeddingDimension,embeddingDimension)
+        self.layer1 = nn.Linear(embeddingDimension,embeddingDimension,dtype=dtType,device=device)
+        self.layer2 = nn.Linear(embeddingDimension,embeddingDimension,dtype=dtType,device=device)
+        self.layer3 = nn.Linear(embeddingDimension,embeddingDimension,dtype=dtType,device=device)
         self.swich = Swich()
 
     def forward(self,x):
@@ -48,12 +48,12 @@ class FeedForwardBypass(nn.Module):
         return self.layer3(self.swich(xL1) * xL2)
     
 class LayerNormalization(nn.Module):
-    def __init__(self,embeddingDimension):
+    def __init__(self,embeddingDimension,dtType,device):
         super().__init__()
         self.epsilon=1e-5
         #trainable shift and scale parameters
-        self.scale = nn.Parameter(torch.ones(embeddingDimension))
-        self.shift = nn.Parameter(torch.zeros(embeddingDimension))
+        self.scale = nn.Parameter(torch.ones(embeddingDimension,dtype=dtType,device=device))
+        self.shift = nn.Parameter(torch.zeros(embeddingDimension,dtype=dtType,device=device))
     
     def forward(self,x):
         #calculate the normalized x
@@ -64,21 +64,26 @@ class LayerNormalization(nn.Module):
         return self.scale * normalizedX + self.shift
     
 class RMSNormalization(nn.Module):
-    def __init__(self,embeddingDimension):
+    def __init__(self,embeddingDimension,dtType,device):
         super().__init__()
-        self.scale = nn.Parameter(torch.ones(embeddingDimension))
+        self.scale = nn.Parameter(torch.ones(embeddingDimension,dtype=dtType,device=device))
 
     def forward(self,x):
         rms = torch.sqrt(torch.mean(x ** 2, dim=-1,keepdim=True) + 1e-5)
         normX = x / rms
         return self.scale * normX
-    
+
+# 
+# Grouped Multi Head Query attention
+# 
+
+
 #
 # Main attention module
 #
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self,numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,qkvBias=False):
+    def __init__(self,numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,dtType,device,qkvBias=False):
         super().__init__()
 
         assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
@@ -86,15 +91,15 @@ class MultiHeadAttention(nn.Module):
         self.embeddingDimension=embeddingDimension
         self.numberOfHeads = numberOfHeads 
         self.headDimension = embeddingDimension // numberOfHeads
-        self.wQuery = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
-        self.wKey = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
-        self.wValue = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.wQuery = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
+        self.wKey = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
+        self.wValue = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
         if attentionDropoutRate > 0:
-            self.dropout = nn.Dropout(attentionDropoutRate)
+            self.dropout = nn.Dropout(attentionDropoutRate,dtype=dtType,device=device)
         else:
             self.dropout = None
-        self.outProjection = nn.Linear(embeddingDimension,embeddingDimension)        
-        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength),diagonal=1))#,persistent=False)
+        self.outProjection = nn.Linear(embeddingDimension,embeddingDimension,device=device,dtype=dtType)        
+        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength,dtype=dtType,device=device),diagonal=1),persistent=False)
 
         #cache
         self.register_buffer('cacheK',None,persistent=False)
@@ -102,11 +107,11 @@ class MultiHeadAttention(nn.Module):
         self.pointerCurrentPosition = 0
 
         #gated attention
-        self.wGate = nn.Linear(embeddingDimension,embeddingDimension,qkvBias)
+        self.wGate = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
 
     def forward(self, x:torch.Tensor, useCache=False):
         #input data
-        batchNr, numberOfTokens, dIn = x.shape
+        batchNr, numberOfTokens, _ = x.shape
 
         #get the keys queries and values for each input
         queries = self.wQuery(x)
