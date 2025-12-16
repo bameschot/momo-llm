@@ -436,7 +436,7 @@ for inputPath in inputPaths:
 
     #create the dataloaders for the input file
     dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]
-    dataloaderDt = dtType=torch.int16
+    dataloaderDt = dtType=torch.int32
     
     trainingDataDevice = device if p_moveDatasetToDevice else None
     print(f"Loading data to device: {p_moveDatasetToDevice} -> {trainingDataDevice}")
