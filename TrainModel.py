@@ -163,11 +163,6 @@ def trainModel(
     
     if(model is None or optimizer is None):
         model, optimizer = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,peakLearningRate,weightDecay,compileModel)
-    # with torch.profiler.profile(
-    #     activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-    #     record_shapes=True,
-    #     profile_memory=True
-    # ) as prof:
     
     return trainModelMedium(
         modelName=modelName,
@@ -288,7 +283,7 @@ def trainModelMedium(
                 parameterGroup["lr"] = learningRate
             
             endTs = time.time() * 1000.0
-            timePerStep=(endTs-startTs)
+            timePerStep=(endTs-startTs)/p_batchSize
 
             #if the current step reaches the evaluation fequency
             if(globalStep%evaluationStepFrequency==0):
@@ -391,6 +386,13 @@ if p_device is None:
 else:
     device = torch.device(p_device)
     deviceName = p_device
+
+# garbage collect & empty cuda/mps caches before starting
+if "cuda" in deviceName:
+    torch.cuda.empty_cache()
+elif "mps" in deviceName:
+    torch.mps.empty_cache()
+gc.collect()
 
 trainingConfig = modelConfigs[p_trainingConfigName]
 
