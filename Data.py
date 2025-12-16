@@ -273,11 +273,11 @@ class GPTDatasetV1(Dataset):
         return self.input_ids[idx], self.target_ids[idx]
 
 class GPTTokenizedDatasetV1(Dataset):
-    def __init__(self, tokens, vocabSize, max_length, stride,device):
+    def __init__(self, tokens, vocabSize, max_length, stride,device,dtType=torch.int):
         self.input_ids = []
         self.target_ids = []
 
-        dataType = torch.int #torch.int32 if vocabSize <= 32767 else torch.int32
+        dataType = dtType #torch.int32 if vocabSize <= 32767 else torch.int32
 
         # Use a sliding window to chunk the book into overlapping sequences of max_length
         for i in range(0, len(tokens) - max_length, stride):
@@ -308,10 +308,10 @@ def create_text_dataloader_v1(txt,tokenizer ,batch_size, max_length, stride,
 
     return dataloader
 
-def create_tokenized_dataloader_v1(tokens,tokenizer ,batch_size, max_length, stride,device,
+def create_tokenized_dataloader_v1(tokens,tokenizer ,batch_size, max_length, stride,device,dtType=torch.int,
                          shuffle=True, drop_last=True, num_workers=0):
     # Create dataset
-    dataset = GPTTokenizedDatasetV1(tokens,tokenizer.vocabSize(), max_length, stride,device)
+    dataset = GPTTokenizedDatasetV1(tokens,tokenizer.vocabSize(), max_length, stride,device,dtType)
  
     # Create dataloader
     dataloader = DataLoader(

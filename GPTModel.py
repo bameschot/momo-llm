@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from GPTModelConfig import *
 
-from Modules import LayerNormalization, RMSNormalization, FeedForward, FeedForwardBypass, MultiHeadAttention
+from Modules import RMSNormalization, FeedForwardBypass, MultiHeadAttention
 
 class GPTModel(nn.Module):
     def __init__(self,config,device):

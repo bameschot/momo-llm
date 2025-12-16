@@ -435,7 +435,8 @@ for inputPath in inputPaths:
     gc.collect()
 
     #create the dataloaders for the input file
-    dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]    
+    dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]
+    dataloaderDt = dtType=torch.int16
     
     trainingDataDevice = device if p_moveDatasetToDevice else None
     print(f"Loading data to device: {p_moveDatasetToDevice} -> {trainingDataDevice}")
@@ -446,6 +447,7 @@ for inputPath in inputPaths:
         max_length=trainingConfig[CONTEXT_LENGTH],
         stride=dlStride,
         device=trainingDataDevice,
+        dtType=dataloaderDt,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
@@ -460,6 +462,7 @@ for inputPath in inputPaths:
         max_length=trainingConfig[CONTEXT_LENGTH],
         stride=dlStride,
         device=trainingDataDevice,
+        dtType=dataloaderDt,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
