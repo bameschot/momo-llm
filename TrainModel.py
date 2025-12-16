@@ -46,6 +46,7 @@ parser.add_argument("--startContext", type=str, default="What is a cat ", help="
 parser.add_argument("--showLearningGraph", action='store_true',help="Indicates if the training loss and validation loss graph should be shown at the end of the training run")
 parser.add_argument("--trainRatio", type=float,default=0.9,help="The training / validation data ratio taken from the dataset")
 parser.add_argument('--compileModel', action='store_true',help= "indicates if a the model should be compiled")
+parser.add_argument('--useAutocast', action='store_true',help= "indicates if a the model should use the scaler when trained (only supported on cuda)")
 parser.add_argument('--moveDatasetToDevice', action='store_true',help= "indicates if the dataloaders should move all their data to the device, helps memory pressure on mps type devices")
 parser.add_argument('--device', type=str, default=None, help= "indicates the device the model has to run on, if not provided the system autodetects in the order cuda->mps->cpu")
 
@@ -72,6 +73,7 @@ p_evaluationIterations=args.evaluationIterations
 p_startContext=args.startContext
 p_showLearningGraph=args.showLearningGraph
 p_compileModel=args.compileModel
+p_useAutocast = args.useAutocast
 p_moveDatasetToDevice = args.moveDatasetToDevice
 p_device = args.device
 
@@ -156,6 +158,7 @@ def trainModel(
         checkpointStepStorageFrequency = 100,
         startContext = "What is a cat ",
         compileModel = False,
+        useAutocast = False,
         era = 1,
         model = None,
         optimizer = None
@@ -182,6 +185,7 @@ def trainModel(
         startContext=startContext,
         tokenizer=tokenizer,
         isCompiled=compileModel,
+        useAutocast=useAutocast,
         era=era
     )
     # print(prof.key_averages().table(sort_by=sort_by_keyword, row_limit=10))
@@ -205,6 +209,7 @@ def trainModelMedium(
         gradientClippingMaxNorm = 1.0,
         startContext = "What is a cat ",
         isCompiled=False,
+        useAutocast=False,
         era=0
         ):
     #set start data
@@ -215,7 +220,7 @@ def trainModelMedium(
 
     #iterate over the requested amount of epochs (complete batch runs)
     # Initialize the scaler
-    if "cuda" in deviceName:
+    if "cuda" in deviceName and useAutocast:
         scaler = torch.GradScaler()
     else:
         scaler = None
@@ -501,6 +506,7 @@ for inputPath in inputPaths:
         evaluationIterations=p_evaluationIterations,
         startContext=p_startContext,
         compileModel=p_compileModel,
+        useAutocast=p_useAutocast,
         era=era,
         model=model,
         optimizer=optimizer
