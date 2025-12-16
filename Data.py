@@ -294,6 +294,9 @@ class GPTTokenizedDatasetV1(Dataset):
         return len(self.input_ids)
 
     def __getitem__(self, idx):
+        # when getting the next item cast the current item to the hot datatype and cast the previous item back to the cold data type
+        if idx > 0:
+            self.input_ids[idx-1].type(self.coldDtType), self.target_ids[idx-1].type(self.coldDtType)
         return self.input_ids[idx].type(self.hotDtType), self.target_ids[idx].type(self.hotDtType)
 
 
