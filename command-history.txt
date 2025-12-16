@@ -12,3 +12,8 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conver
 python3 TrainModel.py --modelName="english-conversations-lc-8k-8_6m" --inputData="processed-data/casual-conversations-8k/**.bin" --shuffleInputFiles --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=100  --numberOfEpochs=10 --peakLearningRate=0.005 --minimalLearningRate=0.002 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_256_6L_12H_288E" --newModel
 
 python3 ChatModel.py --modelname="english-conversations-lc-8k-8_6m" --forceLowerCase
+
+-----
+
+python3 TrainModel.py --modelName="english-conversations-lc-8k-18_9m" --inputData="processed-data/casual-conversations-8k/**.bin" --shuffleInputFiles --device="cuda" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=300 --batchSize=10  --numberOfEpochs=10 --peakLearningRate=0.005 --minimalLearningRate=0.002 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_350_6L_12H_480E" --compileModel --newModel
+
