@@ -120,4 +120,4 @@ while inputTxt != '/bye':
 
 conversationHistoryTxt='\n'
 tokensPS = (numOutputTokens/(totalRunTimeMs/1000.0)) 
-print(f'Done chatting! [{tokensPS} tps, {round(numInputTokens,2)} input tokens, {numOutputTokens} output tokens]')
+print(f'Done chatting! [{tokensPS} tps, {round(numInputTokens,2)} input tokens, {numOutputTokens} output tokens, {len(conversationHistoryTokens[0])} history tokens]')

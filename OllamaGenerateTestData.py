@@ -23,7 +23,7 @@ parser.add_argument("--outputFileFolder", type=str,default='./input-data', help=
 parser.add_argument("--outputFileName", type=str,default='syntetic-conversations', help="the name of the output files")
 parser.add_argument("--replacementFilePath", type=str,default='./_ollama-generation-replacements.rep', help="the path of the replacement file used to format the models output")
 parser.add_argument("--printInterval", type=int,default=10, help="the interval that a control is being printed")
-parser.add_argument("--numberOfGenerations", type=int,default=50, help="the number of responses that are generated using the prompt from the model")
+parser.add_argument("--numberOfGenerations", type=int,default=10000, help="the number of responses that are generated using the prompt from the model")
 
 parser.add_argument("--newTrainingFile", action='store_true',help="Indicates if the output file must be new or if the data has to be appended")
 

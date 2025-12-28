@@ -180,7 +180,7 @@ log/**
 
 **/loss-plot.pdf
 .DS_Store
-.DS_Store
 vocabulary/sp-training**
 __azurite_db_queue__.json
 __azurite_db_queue_extent__.json
+.DS_Store

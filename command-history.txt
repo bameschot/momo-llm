@@ -17,3 +17,5 @@ python3 ChatModel.py --modelname="english-conversations-lc-8k-8_6m" --forceLower
 
 python3 TrainModel.py --modelName="english-conversations-lc-8k-18_9m" --inputData="processed-data/casual-conversations-8k/**.bin" --shuffleInputFiles --device="cuda" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=300 --batchSize=10  --numberOfEpochs=10 --peakLearningRate=0.005 --minimalLearningRate=0.002 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_350_6L_12H_480E" --compileModel --newModel
 
+----
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a casual conversation between 300 and 1000 words with senteces that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="sythetic-short-conversations-js" --numberOfGenerations=10000

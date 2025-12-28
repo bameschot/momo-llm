@@ -456,6 +456,7 @@ for inputPath in inputPaths:
         stride=dlStride,
         device=trainingDataDevice,
         dtType=dataloaderDtType,
+        shuffle=False,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
@@ -471,6 +472,7 @@ for inputPath in inputPaths:
         device=trainingDataDevice,
         dtType=dataloaderDtType,
         drop_last=True,
+        shuffle=False,
         num_workers=numDataLoaderWorkers
     )
     print(f"Loaded validation data")
