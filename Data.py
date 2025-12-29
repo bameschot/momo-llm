@@ -67,7 +67,7 @@ def trainSentencePieceTokenizer(
         bos_piece='[bos]'
         eos_piece='[eos]'
 
-    userDefinedTokens = [eos_piece,bos_piece,"'s","'ll","'re","'ve","'d","'m","n't","i'm","it's"]
+    userDefinedTokens = [eos_piece,bos_piece,"'s","'ll","'re","'ve","'d","'m","n't","i'm","it's","you're","i've","i'll"]
 
     sentencepiece.SentencePieceTrainer.train(input=f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-000.txt',
                                 model_prefix=f'{modelDir}/{fullModelName}',

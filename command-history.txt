@@ -1,21 +1,42 @@
-python3 PreProcessDataFiles.py --inputData="./input-data/simpleConversations/**|./input-data/splitOpenSubTitlesEn/splitOpenSubTitlesEn-000[0-9][0-9].txt|./input-data/tinyStories/**|./input-data/wikiSimpleEnglish/**" --outputFileName="conversation-english-chunked-16K-small" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=50 --vocabulary=english-16k-lc-16000 --tokenizer=sentencepiece --newOutputFile
 
-python3 TrainModel.py --modelName="conv-english-lc-shuffle-16k-8m" --inputData="processed-data/conversation-english-chunked-16k-small/**.bin" --shuffleInputFiles --device="cuda" --startContext="What about dinner in central park new york tonight? " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=30  --numberOfEpochs=1 --peakLearningRate=0.0009 --minimalLearningRate=0.00009 --weightDecay=0.00005 --trainingModelConfigName="SIMP_ENG_LC_16K_CONFIG_XS_386_12L_6H_174E"
+------ short conv
 
-python3 RunModel.py --modelname="conv-english-lc-shuffle-16k-8m" --device="cuda" --temperature=1.2 --topK=150 --tokensToGenerate=250  --prompt="want to get some cofee? yes please where in central park, let's go to the park" --forceLowerCase
+--data
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a romantic, cozy or flirty conversation between 300 and 1000 words with sentences that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-romantic-short-conversations" --numberOfGenerations=100000
 
---perfect!
-python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --vocabSize=8000 --vocabularyName="conversational-english-8k-lc" --forceLowerCase --newTrainingFile
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a casual conversation between 300 and 1000 words with sentences that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-casual-short-conversations" --numberOfGenerations=100000
 
-python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="casual-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=100 --vocabulary="conversational-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile                 
+--tokenizer
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=8000 --vocabularyName="conversational-english-8k-lc" --forceLowerCase --newTrainingFile ;  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=12000 --vocabularyName="conversational-english-12k-lc" --forceLowerCase --newTrainingFile ;  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=16000 --vocabularyName="conversational-english-16k-lc" --forceLowerCase --newTrainingFile  
 
-python3 TrainModel.py --modelName="english-conversations-lc-8k-8_6m" --inputData="processed-data/casual-conversations-8k/**.bin" --shuffleInputFiles --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=100  --numberOfEpochs=10 --peakLearningRate=0.005 --minimalLearningRate=0.002 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_256_6L_12H_288E" --newModel
+--preprocess PreProcessDataFiles
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-conversations/**.txt" --outputFileName="synthetic-short-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-romantic-short-conversations/**.txt" --outputFileName="synthetic-romantic-short-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile
+;
 
-python3 ChatModel.py --modelname="english-conversations-lc-8k-8_6m" --forceLowerCase
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-conversations/**.txt" --outputFileName="synthetic-short-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-romantic-short-conversations/**.txt" --outputFileName="synthetic-romantic-short-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile
+;
 
------
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-conversations/**.txt" --outputFileName="synthetic-short-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-romantic-short-conversations/**.txt" --outputFileName="synthetic-romantic-short-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile
 
-python3 TrainModel.py --modelName="english-conversations-lc-8k-18_9m" --inputData="processed-data/casual-conversations-8k/**.bin" --shuffleInputFiles --device="cuda" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=300 --batchSize=10  --numberOfEpochs=10 --peakLearningRate=0.005 --minimalLearningRate=0.002 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_350_6L_12H_480E" --compileModel --newModel
+--train
+--8k
+python3 TrainModel.py --modelName="english-conversations-lc-8k-19m" --inputData="processed-data/synthetic-casual-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=5 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_512_6L_12H_480E" --newModel 
+;
+python3 TrainModel.py --modelName="english-conversations-lc-8k-19m" --inputData="processed-data/synthetic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=10 --peakLearningRate=0.002 --minimalLearningRate=0.0001 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_512_6L_12H_480E" 
+;
+python3 TrainModel.py --modelName="english-conversations-lc-8k-19m" --inputData="processed-data/synthetic-romantic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=10 --peakLearningRate=0.001 --minimalLearningRate=0.0001 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_8K_CONFIG_XS_512_6L_12H_480E" 
 
-----
-python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a casual conversation between 300 and 1000 words with senteces that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="sythetic-short-conversations-js" --numberOfGenerations=10000
+--12k
+python3 TrainModel.py --modelName="english-conversations-lc-12k-22_8m" --inputData="processed-data/synthetic-casual-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=5 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_12K_CONFIG_XS_512_6L_12H_480E" --newModel
+
+--16k
+python3 TrainModel.py --modelName="english-conversations-lc-16k-26_6m" --inputData="processed-data/synthetic-casual-conversations-16k/**.bin" --device="mps" --startContext="hey how are you?[eos] " --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=5 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --trainingModelConfigName="CONV_ENG_LC_16K_CONFIG_XS_512_6L_12H_480E" --newModel
+

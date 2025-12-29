@@ -49,6 +49,7 @@ parser.add_argument('--compileModel', action='store_true',help= "indicates if a 
 parser.add_argument('--useAutocast', action='store_true',help= "indicates if a the model should use the scaler when trained (only supported on cuda)")
 parser.add_argument('--moveDatasetToDevice', action='store_true',help= "indicates if the dataloaders should move all their data to the device, helps memory pressure on mps type devices")
 parser.add_argument('--device', type=str, default=None, help= "indicates the device the model has to run on, if not provided the system autodetects in the order cuda->mps->cpu")
+parser.add_argument('--shuffleBatches', action='store_true',help= "indicates if the batches in the dataloader should be shuffled")
 
 
 args = parser.parse_args()
@@ -73,9 +74,12 @@ p_evaluationIterations=args.evaluationIterations
 p_startContext=args.startContext
 p_showLearningGraph=args.showLearningGraph
 p_compileModel=args.compileModel
+p_shuffleBatches=args.shuffleBatches
 p_useAutocast = args.useAutocast
 p_moveDatasetToDevice = args.moveDatasetToDevice
 p_device = args.device
+
+print(f'p_shuffleBatches = {p_shuffleBatches}')
 
 ########################################
 #Methods
@@ -456,7 +460,7 @@ for inputPath in inputPaths:
         stride=dlStride,
         device=trainingDataDevice,
         dtType=dataloaderDtType,
-        shuffle=False,
+        shuffle=p_shuffleBatches,
         drop_last=True,
         num_workers=numDataLoaderWorkers
     )
@@ -471,8 +475,8 @@ for inputPath in inputPaths:
         stride=dlStride,
         device=trainingDataDevice,
         dtType=dataloaderDtType,
+        shuffle=p_shuffleBatches,
         drop_last=True,
-        shuffle=False,
         num_workers=numDataLoaderWorkers
     )
     print(f"Loaded validation data")
