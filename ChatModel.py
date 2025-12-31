@@ -16,8 +16,9 @@ from GPTModelStorage import *
 parser = argparse.ArgumentParser(
         description="Runs a chat with a momo-llm model"
     )
-parser.add_argument("--modelname", type=str,default="TestEconomy_small_r", help="The name of the model to run, model must be present in./models/<model-name>/<model-name>.model")
+parser.add_argument("--model", type=str,default="TestEconomy_small_r", help="The name of the model to run, model must be present in./models/<model-name>/<model-name>.model")
 parser.add_argument("--forceLowerCase", action='store_true', help="ensures that all text becomes lowercase")
+parser.add_argument("--autoAppendPeriod", action='store_true', help="appends a period to each chat if missing and no other sign is present")
 parser.add_argument("--tokensToGenerate", type=int, default=100, help="The number of tokens to generate")
 parser.add_argument("--temperature",type=float, default=0.5,help="The temperature to use when generating tokens, regulates variety in output")
 parser.add_argument("--topK",type=int, default=50,help="The numper of most probable to pick the next token from, together with temperature this regulates variety in ouput")
@@ -28,7 +29,8 @@ parser.add_argument('--device', type=str, default=None, help= "indicates the dev
 
 args = parser.parse_args()
 
-p_modelname = args.modelname
+p_model = args.model
+p_autoAppendPeriod = args.autoAppendPeriod
 p_forceLowerCase = args.forceLowerCase
 p_tokensToGenerate = args.tokensToGenerate
 p_temperature = args.temperature     
@@ -55,13 +57,13 @@ else:
 
 
 model = loadModel(
-    modelName=p_modelname,
+    modelName=p_model,
     device=device
 )
 
 tokenizer = initializeTokenizer(model.config[TOKENIZER_TYPE],model.config[TOKENIZER_NAME])
 
-print(f"Model loaded: {p_modelname}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
+print(f"Model loaded: {p_model}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
 
 if p_compileModel:
     print("compiling model")
@@ -81,7 +83,8 @@ contextWindow = model.config[CONTEXT_LENGTH]
 
 while inputTxt != '/bye':
 
-    # parse the input and append eos if required, add to the conversation history
+    # parse the input and append eos and period if required, add to the conversation history
+    inputTxt = inputTxt+"." if p_autoAppendPeriod and inputTxt[-1] not in ['!','?'] else inputTxt
     inputTxt = inputTxt if p_ommitEos else inputTxt+"[EOS]"
     inputTxt = inputTxt.lower() if p_forceLowerCase else inputTxt
     conversationHistoryTxt += inputTxt+'\n'

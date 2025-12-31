@@ -16,7 +16,7 @@ from GPTModelStorage import *
 parser = argparse.ArgumentParser(
         description="Runs a momo-llm model"
     )
-parser.add_argument("--modelname", type=str,default="TestEconomy_small_r", help="The name of the model to run, model must be present in./models/<model-name>/<model-name>.model")
+parser.add_argument("--model", type=str,default="TestEconomy_small_r", help="The name of the model to run, model must be present in./models/<model-name>/<model-name>.model")
 parser.add_argument("--tokenizer", type=str,default="gpt2", help="The name of the tokenizer to parse input and output in")
 parser.add_argument("--tokenizerVocabFile", type=str,default=None, help="The path of the vocabulary or model file to load for the tokenizer")
 parser.add_argument("--prompt", type=str,default="Theory of labour", help="The input promt to start generating text with")
@@ -30,7 +30,7 @@ parser.add_argument('--device', type=str, default=None, help= "indicates the dev
 
 args = parser.parse_args()
 
-p_modelname = args.modelname
+p_model = args.model
 p_tokenizer = args.tokenizer
 p_tokenizerVocabFile = args.tokenizerVocabFile
 p_prompt = args.prompt 
@@ -59,13 +59,13 @@ else:
 
 
 model = loadModel(
-    modelName=p_modelname,
+    modelName=p_model,
     device=device
 )
 
 tokenizer = initializeTokenizer(model.config[TOKENIZER_TYPE],model.config[TOKENIZER_NAME])
 
-print(f"Model loaded: {p_modelname}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
+print(f"Model loaded: {p_model}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
 
 if p_compileModel:
     print("compiling model")

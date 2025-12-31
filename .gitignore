@@ -171,8 +171,8 @@ cython_debug/
 .pypirc
 
 #custom
-input-data/**/**/
-!input-data/synthetic-casual-conversations/**/
+input-data/*
+# !input-data/synthetic-*
 processed-data/**/**
 vocabulary/**/**/
 models/**/**/
@@ -184,3 +184,4 @@ vocabulary/sp-training**
 __azurite_db_queue__.json
 __azurite_db_queue_extent__.json
 .DS_Store
+input-data.zip

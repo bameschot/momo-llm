@@ -25,9 +25,11 @@ from matplotlib.ticker import MaxNLocator
 parser = argparse.ArgumentParser(
         description="Trains a momo-llm model"
     )
-parser.add_argument("--modelName", type=str,default="TestEconomy_small_r", help="The name of the model to train")
+parser.add_argument("--model", type=str,default="TestEconomy_small_r", help="The name of the model to train")
 parser.add_argument('--newModel', action='store_false',help= "indicates if a new model should be trained, if not the model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with the same name")
-parser.add_argument("--trainingModelConfigName", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
+parser.add_argument('--copyModel', action='store_true',help= "indicates if the model should be copied, the original model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with -1 postfixed")
+
+parser.add_argument("--config", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--inputData", type=str,default=TOKENIZER_PROCESSED_DATA_DIRECTORY, help="The glob pattern for selecting input data")
 parser.add_argument('--shuffleInputFiles', action='store_true',help= "indicates if the (era) input files are shuffled")
 parser.add_argument("--batchSize", type=int, default=40, help="The batch size of the dataloader")
@@ -60,9 +62,10 @@ p_shuffleInputFiles = args.shuffleInputFiles
 p_batchSize=args.batchSize
 p_stride = args.stride
 p_trainRatio = args.trainRatio
-p_trainingConfigName = args.trainingModelConfigName
-p_modelName=args.modelName
+p_config = args.config
+p_model=args.model
 p_loadModelFromCheckpoint=args.newModel
+p_copyModel=args.copyModel
 p_minimalLearningRate =args.minimalLearningRate
 p_peakLearningRate=args.peakLearningRate
 p_warmupSteps=args.warmupSteps    
@@ -78,8 +81,6 @@ p_shuffleBatches=args.shuffleBatches
 p_useAutocast = args.useAutocast
 p_moveDatasetToDevice = args.moveDatasetToDevice
 p_device = args.device
-
-print(f'p_shuffleBatches = {p_shuffleBatches}')
 
 ########################################
 #Methods
@@ -403,7 +404,7 @@ elif "mps" in deviceName:
     torch.mps.empty_cache()
 gc.collect()
 
-trainingConfig = modelConfigs[p_trainingConfigName]
+trainingConfig = modelConfigs[p_config]
 
 tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
 
@@ -418,7 +419,10 @@ else:
 print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0
-model, optimizer = loadModelForTraining(p_modelName,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
+model, optimizer = loadModelForTraining(p_model,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
+
+if p_copyModel:
+    p_model = p_model+'-1'
 
 era = 0
 for inputPath in inputPaths:
@@ -494,7 +498,7 @@ for inputPath in inputPaths:
 
     print(f"\n[${era:02d}/{len(inputPaths):02d}]Start training for {inputPath} with peak learning rate: {p_peakLearningRate}")
     learningRate = trainModel(
-        modelName=p_modelName,
+        modelName=p_model,
         modelConfig=trainingConfig,
         loadModelFromCheckpoint=loadModelFromCheckpoint,
         trainingDataLoader=trainingDataLoader,
