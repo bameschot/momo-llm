@@ -133,18 +133,17 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,
             # if the generated text exceeds this generation epoch the context size reset the model and feed it half the previously generated context to start with
             # this prevents the model from generating errors when exceeding the context size
             if(epochTextGenerated>0 and epochTextGenerated % contextSize==0):
-                
                 #take half of the previously generated text and reset the epoch text generated counter to the provided restart prompt size
                 newGenIdx = idx[:,-int(epochTextGenerated-(contextSize/2)):]
                 epochTextGenerated = len(newGenIdx[0])
 
                 # reset the cache and generate further based on the last half of the text
                 model.resetCache()
-                logits = model(newGenIdx)
-            else: 
-                # generate the next logit using only the last generated idx as input relying on the cache for the previous results
-                logits = model(idxNext) 
-                epochTextGenerated += 1
+                logits = model(newGenIdx,True)
+             
+            # generate the next logit using only the last generated idx as input relying on the cache for the previous results
+            logits = model(idxNext,True) 
+            epochTextGenerated += 1
 
         
     return idx

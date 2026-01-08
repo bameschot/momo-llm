@@ -118,6 +118,12 @@ class MultiHeadAttention(nn.Module):
         keysNew = self.wKey(x)
         valuesNew = self.wValue(x)
 
+        #create views for each of the heads
+        queries = queries.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
+        keysNew = keysNew.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
+        valuesNew = valuesNew.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
+
+
         #initial attention gate value
         gate = self.wGate(x)
 
@@ -131,11 +137,6 @@ class MultiHeadAttention(nn.Module):
             keys, values = self.cacheK, self.cacheV
         else:
             keys, values = keysNew, valuesNew
-
-        #create views for each of the heads
-        queries = queries.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
-        keys = keys.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
-        values = values.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension)
 
         #transpose to cahnge from batch,numberOfTokens,numberOfHeads,headDimension -> batch,numberOfHeads,numberOfTokens,headDimension
         queries = queries.transpose(1,2)

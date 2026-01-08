@@ -96,7 +96,7 @@ while inputTxt != '/bye':
     # call the model with the full conversation history
     startTs = time.time() * 1000.0
     with torch.no_grad():
-        outputTokens = generateText(
+        outputTokens = generateTextCached(
             model=model,
             idx=conversationHistoryTokens.to(device),
             maxNewTokens=p_tokensToGenerate,
