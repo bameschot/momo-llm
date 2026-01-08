@@ -6,6 +6,8 @@ python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-clean
 
 
 
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-*.txt" --outputFileName="english-subtitles-cleaned-large-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
+
 ------ short conv
 
 --data
@@ -40,16 +42,23 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --
 python3 TrainModel.py --model="english-conversations-lc-8k-30_0m" --inputData="processed-data/synthetic-casual-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=8 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --config="CONV_ENG_LC_8K_CONFIG_XS_512_12L_12H_480E" --newModel 
 ;
 python3 TrainModel.py --model="english-conversations-lc-8k-30_0m-1" --inputData="processed-data/synthetic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=8 --peakLearningRate=0.001 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_8K_CONFIG_XS_512_12L_12H_480E"  --copyModel
+;
+
+--8k 8_
+python3 TrainModel.py --model="english-conversations-lc-8k-8_4m" --inputData="processed-data/synthetic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=100  --numberOfEpochs=4 --peakLearningRate=0.001 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_8K_CONFIG_XS_300_5L_5H_300E"  --newModel
+
 
 --12k - 19_8m
 python3 TrainModel.py --model="english-conversations-lc-12k-19_8m" --inputData="processed-data/synthetic-casual-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=4 --peakLearningRate=0.002 --minimalLearningRate=0.0010 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_300_12L_15H_345E" --newModel
 ;
 python3 TrainModel.py --model="english-conversations-lc-12k-19_8m" --inputData="processed-data/synthetic-short-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=4 --peakLearningRate=0.0012 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_12K_CONFIG_XS_300_12L_15H_345E" --copyModel 
 
---12k - 31_2m
-python3 TrainModel.py --model="english-conversations-lc-12k-31_2m" --inputData="processed-data/synthetic-casual-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=4 --peakLearningRate=0.002 --minimalLearningRate=0.0010 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_300_24L_15H_345E" --newModel
-;
-python3 TrainModel.py --model="english-conversations-lc-12k-31_2m" --inputData="processed-data/synthetic-short-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=4 --peakLearningRate=0.0012 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_12K_CONFIG_XS_300_24L_15H_345E" --copyModel 
+--12k - 35_4m
+python3 TrainModel.py --model="english-conversations-lc-12k-35_4m" --inputData="processed-data/synthetic-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=8 --peakLearningRate=0.002 --minimalLearningRate=0.0001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_24L_10H_400E" --newModel
+
+--12k - 18_3m
+python3 TrainModel.py --model="english-conversations-lc-12k-18_3m" --inputData="processed-data/synthetic-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=50  --numberOfEpochs=8 --peakLearningRate=0.003 --minimalLearningRate=0.0001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_300_10L_10H_350E" --newModel
+
 
 --12k - 39_6m
 
@@ -61,10 +70,11 @@ python3 TrainModel.py --model="english-conversations-lc-12k-39_6m-1-1" --inputDa
 
 --12k - 40_2m
 
-python3 TrainModel.py --model="english-conversations-lc-12k-40_2m" --inputData="processed-data/english-subtitles-cleaned-000-029-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=1 --peakLearningRate=0.0005 --minimalLearningRate=0.0001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_350_14L_10H_500E" --newModel
+python3 TrainModel.py --model="english-conversations-lc-12k-40_2m" --inputData="processed-data/english-subtitles-cleaned-000-029-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=1 --peakLearningRate=0.0005 --minimalLearningRate=0.0002 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_350_14L_10H_500E" --newModel
 ;
 python3 TrainModel.py --model="english-conversations-lc-12k-40_2m-1" --inputData="processed-data/synthetic-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=16 --peakLearningRate=0.0005 --minimalLearningRate=0.000001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_350_14L_10H_500E" --copyModel
 
+python3 TrainModel.py --model="english-conversations-lc-lambda-12k-40_2m-1" --inputData="processed-data/synthetic-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=3 --peakLearningRate=0.00001 --minimalLearningRate=0.00001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_350_14L_10H_500E" --copyModel
 
 
 --16k

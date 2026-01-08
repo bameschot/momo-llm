@@ -5,7 +5,7 @@ import torch
 import torch._dynamo
 
 from Tokenizers import *
-from GenerateText import generateTextCached, textToTokens, tokensToText
+from GenerateText import generateText, generateTextCached, textToTokens, tokensToText
 from GPTModelConfig import *
 from GPTModelStorage import *
 
@@ -72,7 +72,7 @@ if p_compileModel:
         torch._dynamo.config.suppress_errors = True
     model = torch.compile(model, mode="max-autotune")
 
-
+print("> ", end=" ")
 inputTxt = input()
 conversationHistoryTxt = ""
 conversationHistoryTokens = torch.empty(size=(1,0),dtype=torch.int32)
@@ -96,7 +96,7 @@ while inputTxt != '/bye':
     # call the model with the full conversation history
     startTs = time.time() * 1000.0
     with torch.no_grad():
-        outputTokens = generateTextCached(
+        outputTokens = generateText(
             model=model,
             idx=conversationHistoryTokens.to(device),
             maxNewTokens=p_tokensToGenerate,
@@ -119,6 +119,7 @@ while inputTxt != '/bye':
     # print(f"Runtime: {runtimeMs} ms. T/Ps: {(p_tokensToGenerate/(runtimeMs/1000.0))} [{outputTokens.shape[1]} tokens]")
 
     print(outputText)
+    print("> ", end=" ")
     inputTxt = input()
 
 conversationHistoryTxt='\n'
