@@ -15,6 +15,13 @@ python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --pro
 
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a casual conversation between 300 and 1000 words with sentences that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-short-casual-conversations" --numberOfGenerations=100000
 
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a friendly conversation between 300 and 1000 words with sentences that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-friendly-short-conversations" --numberOfGenerations=100000
+
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an annoyed conversation between 300 and 1000 words with sentences that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-annoyed-short-conversations" --numberOfGenerations=100000
+
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an cheeky upbeat conversation between 300 and 1000 words with sentences that are no larger than 40 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-cheeky-short-conversations" --numberOfGenerations=100000
+
+
 --tokenizer
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=8000 --vocabularyName="conversational-english-8k-lc" --forceLowerCase --newTrainingFile ;  
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=12000 --vocabularyName="conversational-english-12k-lc" --forceLowerCase --newTrainingFile ;  

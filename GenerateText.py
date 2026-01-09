@@ -91,7 +91,7 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,
         #ensure idx is no larger than the model supported max context size and fill the cache with the prompt   
         model.resetCache()
         logits = model(idx[:,-contextSize:],True)
-
+        
         #generate the requested logits and (on the first pass process the first generated logit of the initial model call)
         for i in range(maxNewTokens):
 
@@ -142,6 +142,8 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,
                 logits = model(newGenIdx,True)
              
             # generate the next logit using only the last generated idx as input relying on the cache for the previous results
+
+            # print(f"next {tokensToText(idxNext,tokenizer)}")
             logits = model(idxNext,True) 
             epochTextGenerated += 1
 
