@@ -184,4 +184,13 @@ vocabulary/sp-training**
 __azurite_db_queue__.json
 __azurite_db_queue_extent__.json
 .DS_Store
+**/.DS_Store
 input-data.zip
+
+utils/stanford-squad/dataset
+utils/stanford-squad/transformed
+!utils/stanford-squad/*.py
+
+utils/wiki-simple-parser/dataset
+utils/wiki-simple-parser/output
+!utils/wiki-simple-parser/*.py
