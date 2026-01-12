@@ -72,8 +72,6 @@ if p_compileModel:
         torch._dynamo.config.suppress_errors = True
     model = torch.compile(model, mode="max-autotune")
 
-print("> ", end=" ")
-inputTxt = input()
 conversationHistoryTxt = ""
 conversationHistoryTokens = torch.empty(size=(1,0),dtype=torch.int32)
 totalRunTimeMs = 0
@@ -81,7 +79,11 @@ numOutputTokens = 0
 numInputTokens = 0
 contextWindow = model.config[CONTEXT_LENGTH]
 
-while inputTxt != '/bye':
+print("> ", end=" ")
+inputTxt = input()
+while '/bye' not in inputTxt:
+    if inputTxt == '':
+        inputTxt = '.'
 
     # parse the input and append eos and period if required, add to the conversation history
     inputTxt = inputTxt+"." if p_autoAppendPeriod and inputTxt[-1] not in ['!','?'] else inputTxt

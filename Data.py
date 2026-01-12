@@ -175,6 +175,7 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
     fileIdx = 0
     outputFileIndex = 0
     tokens = []
+    totalTokensParsed = 0
     replacementDefinitions = loadReplacementDefinitions(TOKENIZER_INPUT_DATA_DIRECTORY) if useReplacementFile else {}
 
     for inputFilePath in inputFilePaths: 
@@ -212,6 +213,7 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
                     picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
                     print(f"Writing processed output file: {outputPath}")
                     outputFileIndex = outputFileIndex+1
+                    totalTokensParsed+=len(tokens)
                     tokens.clear()
                     gc.collect()
             
@@ -219,8 +221,9 @@ def preprocessInputDataAsTokens(inputFilePaths, processedOutputFileDir,processed
     
     #write the remainder of the tokens to the file
     outputPath = f'{processedOutputFileDir}/{processedOutputFileName}/{processedOutputFileName}-{outputFileIndex:03d}.bin'
+    totalTokensParsed += len(tokens)
     picleTokenListToGzipBin(tokens=tokens,filePath=outputPath)
-    print(f"Writing final processed output file: {outputPath}")
+    print(f"Writing final processed output file: {outputPath}, total tokens processed {totalTokensParsed}")
 
 def picleTokenListToGzipBin(tokens,filePath):
     with gzip.open(filePath,'wb+') as joinedCompressedOutput:
