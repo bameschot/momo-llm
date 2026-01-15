@@ -1,8 +1,20 @@
 
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-000-029-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-030-069-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-069-099-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-100-130-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-000-029-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-030-069-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-069-099-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-100-130-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile
+
+
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-000-029-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-030-069-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-069-099-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-100-130-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile
+
+
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-000-029-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-030-069-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-069-099-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-100-130-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile
 
 
 
@@ -18,19 +30,19 @@ python3 OllamaGenerateTestDataFromFiles.py --printInterval=10 --startFromFileInd
 --- emotions
 echo '--280m casual' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a casual conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-casual-conversations" --generationSizeMb=25;
-echo '--75m romantic';
+echo '--70m romantic';
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a romantic, cozy or flirty conversation between 300 and 1000 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-romantic-conversations" --generationSizeMb=25;
-echo '--11m upbeat';
+echo '--25m upbeat';
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an upbeat conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-upbeat-conversations" --generationSizeMb=25;
 echo '--7m annoyed contempt';
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an annoyed or contemptfull conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-annoyed-conversations" --generationSizeMb=25;
-echo '--0m suprised' ;
+echo '--10m suprised' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a conversation where you are suprised by an event between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-suprised-conversations" --generationSizeMb=10;
-echo '--0m interested' ;
+echo '--6m interested' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a conversation asking about personal interests between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-interested-conversations" --generationSizeMb=10 ;
-echo '--0m joy' ;
+echo '--15m joy' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a joyous conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-joyous-conversations" --generationSizeMb=10 ;
-echo '--0m sad' ;
+echo '--21m sad' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a sad conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-sad-conversations" --generationSizeMb=10 ;
 echo '--0m angry disgusted' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an angry or disgusted conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-angry-disgusted-conversations" --generationSizeMb=10 ;
@@ -38,7 +50,7 @@ echo '--0m shamefull' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an shamefull or guilty conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-shamefull-conversations" --generationSizeMb=10 ;
 echo '--0m fearfull' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an fearfull conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-fearfull-conversations" --generationSizeMb=10 ;
-echo '--0m shy' ;
+echo '--9m shy' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate an shy conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-shy-conversations" --generationSizeMb=10 ;
 
 
@@ -53,8 +65,13 @@ python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --pro
 
 --tokenizer
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=8000 --vocabularyName="conversational-english-8k-lc" --forceLowerCase --newTrainingFile ;  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=8000 --vocabularyName="conversational-emotion-english-8k-lc" --forceLowerCase --newTrainingFile  
+
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=12000 --vocabularyName="conversational-english-12k-lc" --forceLowerCase --newTrainingFile ;  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=12000 --vocabularyName="conversational-emotion-english-12k-lc" --forceLowerCase --newTrainingFile  
+
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=16000 --vocabularyName="conversational-english-16k-lc" --forceLowerCase --newTrainingFile  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=16000 --vocabularyName="conversational-emotion-english-16k-lc" --forceLowerCase --newTrainingFile  
 
 --preprocess PreProcessDataFiles
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
