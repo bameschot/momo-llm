@@ -8,24 +8,31 @@ from GPTModel import GPTModel
 
 MODEL_FOLDER = "./models"
 
-def storeCheckPoint(modelName,model,optimizer,isCompiled=False):
+def storeCheckPoint(modelName,model,optimizer,isCompiled=False,tokenizer=None):
     Path(f"{MODEL_FOLDER}/{modelName}").mkdir(parents=True, exist_ok=True)
     
     modelStateDict = repairCompiledStateDict(model.state_dict()) if isCompiled else model.state_dict()
     optimizerStateDict = repairCompiledStateDict(optimizer.state_dict()) if isCompiled else optimizer.state_dict()
-
-    torch.save(
-        {
+    storageDict = {
             "ModelConfig": model.config,
             "ModelStateDict": modelStateDict,
             "OptimizerStateDict": optimizerStateDict
-        },
+        }
+    if tokenizer is not None:
+        storageDict["SPModelBytes"] = tokenizer.modelFileBytes
+
+    torch.save(
+        storageDict,
         f"{MODEL_FOLDER}/{modelName}/{modelName}.pth"
     )
 
 def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
     modelData = torch.load(f"{MODEL_FOLDER}/{modelName}/{modelName}.pth",device)
     config = modelData["ModelConfig"]
+    if "SPModelBytes" in modelData:
+        spModelBytes = modelData["SPModelBytes"]
+    else: 
+        spModelBytes = None
     
     #this sets the default data type for all future operations based on config
     dtType = getDataTypeFromConfig(config)
@@ -43,24 +50,30 @@ def loadCheckpoint(modelName,device,learningRate=0.004,weightDecay=0.1):
         if "step" in vv and vv["step"].device.type != "cpu":
             vv["step"] = vv["step"].cpu()
 
-    return model, optimizer
+    return model, optimizer, spModelBytes
 
-def storeModel(modelName,model,isCompiled=False):
+def storeModel(modelName,model,isCompiled=False,tokenizer=None):
     Path(f"{MODEL_FOLDER}/{modelName}").mkdir(parents=True, exist_ok=True)
 
     modelStateDict = repairCompiledStateDict(model.state_dict()) if isCompiled else model.state_dict()
-
-    torch.save(
-        {
+    storageDict = {
             "ModelConfig": model.config,
             "ModelStateDict": modelStateDict
-        },
+        }
+    if tokenizer is not None:
+        storageDict["SPModelBytes"] = tokenizer.modelFileBytes
+
+    torch.save(storageDict,
         f"{MODEL_FOLDER}/{modelName}/{modelName}.model"
     )
 
 def loadModel(modelName,device):
     modelData = torch.load(f"{MODEL_FOLDER}/{modelName}/{modelName}.model",device)
     config = modelData["ModelConfig"]
+    if "SPModelBytes" in modelData:
+        spModelBytes = modelData["SPModelBytes"]
+    else: 
+        spModelBytes = None
 
     #this sets the default data type for all future operations based on config
     dtType = getDataTypeFromConfig(config)
@@ -69,7 +82,7 @@ def loadModel(modelName,device):
     model = GPTModel(config,device).to(device)
     model.load_state_dict(modelData["ModelStateDict"])
     model.eval()
-    return model
+    return model, spModelBytes
 
 
 #turns the keys of state dicts for compiled models to the keys for non-compiled models 

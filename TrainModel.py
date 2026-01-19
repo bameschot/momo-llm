@@ -170,7 +170,11 @@ def trainModel(
         ):          
     
     if(model is None or optimizer is None):
-        model, optimizer = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,peakLearningRate,weightDecay,compileModel)
+        model, optimizer, spModelBytes = loadModelForTraining(modelName,modelConfig,loadModelFromCheckpoint,peakLearningRate,weightDecay,compileModel)
+        if spModelBytes is None:
+            tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
+        else:
+            tokenizer = initializeTokenizerFromModelBytes(trainingConfig[TOKENIZER_TYPE],modelName,spModelBytes)
     
     return trainModelMedium(
         modelName=modelName,
@@ -306,8 +310,8 @@ def trainModelMedium(
 
             #storage checkpoint interval
             if checkpointStepStorageFrequency is not None and globalStep%checkpointStepStorageFrequency==0:
-                storeModel(modelName,model,isCompiled)
-                storeCheckPoint(modelName,model,optimizer,isCompiled)
+                storeModel(modelName,model,isCompiled,tokenizer)
+                storeCheckPoint(modelName,model,optimizer,isCompiled,tokenizer)
                 print(f"Storing model: {modelName}")
                 gc.collect()
     
@@ -318,21 +322,21 @@ def trainModelMedium(
         generateAndPrintSample(model,tokenizer,device,startContext)
         
     #after all epochs return the training losses and validation losses
-    storeModel(modelName,model,isCompiled)
-    storeCheckPoint(modelName,model,optimizer,isCompiled)
+    storeModel(modelName,model,isCompiled,tokenizer)
+    storeCheckPoint(modelName,model,optimizer,isCompiled,tokenizer)
     print(f"Storing model: {modelName}")
     return learningRate    
 
 def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learningRate, weightDecay, compileModel):
     if loadModelFromCheckpoint:
-        model,optimizer = loadCheckpoint(modelName,device,learningRate=learningRate,weightDecay=weightDecay)
+        model,optimizer,spModelBytes = loadCheckpoint(modelName,device,learningRate=learningRate,weightDecay=weightDecay)
         print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
     else: 
         torch.set_default_dtype(getDataTypeFromConfig(modelConfig))
         model = GPTModel(modelConfig,device).to(device)
         print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
         optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
-    
+        spModelBytes = None
     model.train()
 
     #compile the model if requested
@@ -344,7 +348,7 @@ def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learnin
         torch.set_float32_matmul_precision('high')
         model = torch.compile(model)#,mode="max-autotune")
 
-    return model, optimizer
+    return model, optimizer, spModelBytes
 
 def plot_losses(epochs_seen, tokens_seen, train_losses, val_losses):
     fig, ax1 = plt.subplots(figsize=(5, 3))
@@ -406,7 +410,6 @@ gc.collect()
 
 trainingConfig = modelConfigs[p_config]
 
-tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
 
 numDataLoaderWorkers = 0
 inputPaths = readInputFilePaths(p_inputData)
@@ -419,7 +422,12 @@ else:
 print (f"Selected training files: {inputPaths}")
 
 dataFileProcessedIdx = 0
-model, optimizer = loadModelForTraining(p_model,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
+model, optimizer, spModelBytes = loadModelForTraining(p_model,trainingConfig,p_loadModelFromCheckpoint,p_peakLearningRate,p_weightDecay,p_compileModel)
+
+if spModelBytes is None:
+    tokenizer = initializeTokenizer(trainingConfig[TOKENIZER_TYPE],trainingConfig[TOKENIZER_NAME])
+else:
+     tokenizer = initializeTokenizerFromModelBytes(trainingConfig[TOKENIZER_TYPE],p_model,spModelBytes)
 
 if p_copyModel:
     p_model = p_model+'-1'

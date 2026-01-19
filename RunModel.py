@@ -58,12 +58,17 @@ else:
     device = torch.device(p_device)
 
 
-model = loadModel(
+
+model,spModelBytes = loadModel(
     modelName=p_model,
     device=device
 )
 
-tokenizer = initializeTokenizer(model.config[TOKENIZER_TYPE],model.config[TOKENIZER_NAME])
+if spModelBytes is None:
+    tokenizer = initializeTokenizer(model.config[TOKENIZER_TYPE],model.config[TOKENIZER_NAME])
+else: 
+    tokenizer = initializeTokenizerFromModelBytes(model.config[TOKENIZER_TYPE],p_model, spModelBytes)
+
 
 print(f"Model loaded: {p_model}, running on device {device} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb")
 

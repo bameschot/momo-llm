@@ -1,4 +1,7 @@
+import os
+from pathlib import Path
 import re
+import uuid
 
 import tiktoken
 import sentencepiece
@@ -18,45 +21,39 @@ def splitAndStripTextIntoTokens(text):
     return [rawToken.strip() for rawToken in rawTokens if rawToken.strip()]
 
 def initializeTokenizer(tokenizerType,tokenizerName):
-    if tokenizerType == 'gpt2':
-        return GPT2Tokenizer()
-    elif tokenizerType == 'sentencepiece':
-        return SentencePieceTokenizer(f"{TOKENIZER_VOCABULARY_DIRECTORY}/{tokenizerName}/{tokenizerName}.model")
-    elif tokenizerType == 'simple':
-        return SimpleTokenizerV2(f"{TOKENIZER_VOCABULARY_DIRECTORY}/{tokenizerName}/{tokenizerName}.vocab")
-    else:
-        return GPT2Tokenizer()
+    if tokenizerType == 'sentencepiece':
+        return SentencePieceTokenizer(modelFileName = tokenizerName)
 
-class SimpleTokenizerV2:
-    def __init__(self,vocab):
-        self.word_to_id = vocab
-        self.id_to_word = {i:s for s,i in vocab.items()}
+def initializeTokenizerFromModelBytes(tokenizerType,modelName,modelFileBytes):
+    if tokenizerType == 'sentencepiece':
+        return SentencePieceTokenizer(modelFileName = modelName, modelFileBytes = modelFileBytes)
 
-    def encode(self,text):
-        return [ self.word_to_id[w]if w in self.word_to_id else self.word_to_id[UKNOWN_VOCAB_WORD] for w in splitAndStripTextIntoTokens(text)]
-    
-    def decode(self,ids):
-        return re.sub(TOKENIZE_INTERPUNCTION_REGEX,r'\1'," ".join([self.id_to_word[i] for i in ids]))
-    
-    def vocabSize(self):
-        return len(self.word_to_id)
 
-class GPT2Tokenizer:
-    def __init__(self):
-        self.tokenizer = tiktoken.get_encoding('gpt2')
 
-    def encode(self,text):
-        return self.tokenizer.encode(text=text,allowed_special={END_OF_TEXT_VOCAB_WORD})
-    
-    def decode(self,ids):
-        return self.tokenizer.decode(ids)
-    
-    def vocabSize(self):
-        return 50257 #hardcoded for tiktoken gpt2
-    
 class SentencePieceTokenizer:
-    def __init__(self,modelFile):
-        self.tokenizer = sentencepiece.SentencePieceProcessor(model_file=modelFile)
+    def __init__(self,modelFileName, modelFileBytes=None):
+        modelFileFolder = f"{TOKENIZER_VOCABULARY_DIRECTORY}/{modelFileName}" 
+        
+        if modelFileBytes is None:
+            modelFilePath = f"{modelFileFolder}/{modelFileName}.model" 
+            print(f'Initialize tokenizer from external model file: {modelFilePath}')
+            with open(modelFilePath,'rb') as mf:
+                self.modelFileBytes = mf.read(-1)
+            self.tokenizer = sentencepiece.SentencePieceProcessor(model_file=modelFilePath)
+        else:
+            modelFileFolder = f"{modelFileFolder}-{uuid.uuid4().hex}"
+            modelFilePath = f"{modelFileFolder}/{modelFileName}.model" 
+
+            Path(modelFileFolder).mkdir(parents=True, exist_ok=True)
+            print(f'Initialize tokenizer from internal model file: {modelFilePath}')
+            self.modelFileBytes = modelFileBytes
+            with open(modelFilePath,'wb') as mf:
+                mf.write(modelFileBytes)
+            self.tokenizer = sentencepiece.SentencePieceProcessor(model_file=modelFilePath)
+
+            os.remove(modelFilePath)
+            Path(modelFileFolder).rmdir()
+                
         self.tokenizer.eos_id = 3
         #self.tokenizer.SetEncodeExtraOptions('eos')        
 
@@ -68,4 +65,5 @@ class SentencePieceTokenizer:
     
     def vocabSize(self):
         return self.tokenizer.vocab_size()
+
     

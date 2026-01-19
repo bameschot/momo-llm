@@ -2,7 +2,7 @@ from GenerateText import textToTokens
 from Tokenizers import initializeTokenizer
 
 
-tokenizer = initializeTokenizer('sentencepiece','synth-english-10k-lc-10000')
+tokenizer = initializeTokenizer('sentencepiece','conversational-english-16k-lc-16000')
 
 text = 'how are you today?[eos]'
 tokens = textToTokens(text,tokenizer)
