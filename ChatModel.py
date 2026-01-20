@@ -82,11 +82,18 @@ numOutputTokens = 0
 numInputTokens = 0
 contextWindow = model.config[CONTEXT_LENGTH]
 
-print("> ", end=" ")
-inputTxt = input()
+inputTxt = ''
 while '/bye' not in inputTxt:
+    #request input
+    print("> ", end=" ")
+    inputTxt = input()
+    
     if inputTxt == '':
         inputTxt = '.'
+
+    if inputTxt == '/model':
+        print(print(f"model: {p_model} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb running on device {device} config: {model.config}"))
+        continue
 
     # parse the input and append eos and period if required, add to the conversation history
     inputTxt = inputTxt+"." if p_autoAppendPeriod and inputTxt[-1] not in ['!','?'] else inputTxt
@@ -122,11 +129,8 @@ while '/bye' not in inputTxt:
     totalRunTimeMs += (endTs-startTs)
 
     # print(f"Runtime: {runtimeMs} ms. T/Ps: {(p_tokensToGenerate/(runtimeMs/1000.0))} [{outputTokens.shape[1]} tokens]")
-
     print(outputText)
-    print("> ", end=" ")
-    inputTxt = input()
 
 conversationHistoryTxt='\n'
-tokensPS = (numOutputTokens/(totalRunTimeMs/1000.0)) 
+tokensPS = (numOutputTokens/(totalRunTimeMs/1000.0)) if numOutputTokens > 0 else 'n/a'
 print(f'Done chatting! [{tokensPS} tps, {round(numInputTokens,2)} input tokens, {numOutputTokens} output tokens, {len(conversationHistoryTokens[0])} history tokens]')

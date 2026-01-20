@@ -35,7 +35,7 @@ CONV_ENG_LC_16K_CONFIG_XS_500_20L_10H_550E = {
     QKV_BIAS: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
-    TOKENIZER_NAME: "conversational-english-16k-lc-16000"
+    TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
 }
 
 #30_807_450
@@ -52,7 +52,7 @@ CONV_ENG_LC_16K_CONFIG_XS_400_10L_10H_450E = {
     QKV_BIAS: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
-    TOKENIZER_NAME: "conversational-english-16k-lc-16000"
+    TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
 }
 
 #27_562_050
@@ -69,10 +69,10 @@ CONV_ENG_LC_16K_CONFIG_XS_400_8L_10H_450E = {
     QKV_BIAS: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
-    TOKENIZER_NAME: "conversational-english-16k-lc-16000"
+    TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
 }
 
-#27_562_050
+#3_3m
 CONV_ENG_LC_16K_CONFIG_XS_200_2L_5H_100E = {
     CONFIG_NAME: "CONV_ENG_LC_16K_CONFIG_XS_200_2L_5H_100E",
     VOCABULARY_SIZE: 16000,
@@ -86,7 +86,7 @@ CONV_ENG_LC_16K_CONFIG_XS_200_2L_5H_100E = {
     QKV_BIAS: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
-    TOKENIZER_NAME: "conversational-english-16k-lc-16000"
+    TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
 }
 
 ################################
