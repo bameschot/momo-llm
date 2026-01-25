@@ -449,7 +449,7 @@ for inputPath in inputPaths:
     validationData = data[splitIdx:]
 
     #Print a sample
-    print(f"training data sample;\n{tokenizer.decode(data[0:100])}\n{str(data[0:100])}")    
+    print(f"training data sample;\n{tokenizer.decode(data[0:200])}") #\n{str(data[0:200])}")    
 
     #explicitly unload the data after it is put in the dataloader, slicing and loading copies the data
     del data

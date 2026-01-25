@@ -95,7 +95,7 @@ class MultiHeadAttention(nn.Module):
         self.wKey = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
         self.wValue = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
         if attentionDropoutRate > 0:
-            self.dropout = nn.Dropout(attentionDropoutRate,dtype=dtType,device=device)
+            self.dropout = nn.Dropout(attentionDropoutRate)
         else:
             self.dropout = None
         self.outProjection = nn.Linear(embeddingDimension,embeddingDimension,device=device,dtype=dtType)        

@@ -16,7 +16,7 @@ class GPTModel(nn.Module):
         self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
         #create the dropout embedding
         if self.config[DROPOUT_EMBEDDING_RATE] > 0:
-            self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE],dtype=dtType,device=device)
+            self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
         else:
             self.dropoutEmbeddings = None
         #create the transformer blocks
@@ -91,7 +91,7 @@ class GPTTransformerBlock(nn.Module):
         self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
         self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
         if config[DROPOUT_SHORTCUT_RATE] > 0:
-            self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE],dtype=dtType,device=device)
+            self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
         else: 
             self.dropoutShortcut = None
 
