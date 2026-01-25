@@ -34,7 +34,62 @@ def simpleTextGeneration(model, idx, maxNewTokens):
     
     return idx
 
-def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printNextToken=False,tokenizer=None):
+def nextLogit(logits, temperature=0.9,topK=40,minP=0.0):
+    # topK filtering, if enabled
+    idxNext = 0
+    if topK > 0:
+        topLogits,_ = torch.topk(logits,topK)
+        #select the lowest probability still allowed by the topK selection
+        minimumVal = topLogits[:,-1]
+        #returns tensor elements as either their real value (if part of the topK range) or as negative infinity
+        logits = torch.where(
+            logits<minimumVal,
+            torch.tensor(float('-inf')).to(logits.device), 
+            logits
+        )
+        #apply temperature informed selection if applicable
+        if(temperature>0.0):
+            logits = logits/temperature
+        probabilities = torch.softmax(logits,dim=-1) 
+        idxNext = torch.multinomial(probabilities,num_samples=1)
+    # minP filtering, if enabled
+    elif minP > 0.0:
+        #apply temperature informed selection if applicable
+        if(temperature>0.0):
+            logits = logits/temperature
+            probabilities = torch.softmax(logits,dim=-1) 
+        else: 
+            probabilities = torch.softmax(logits,dim=-1) 
+        
+        # determine the max p cutoff by multiplying the largest logit probability by the minP setting
+        maxLogitProbability = torch.max(probabilities)
+        minPCutoff = maxLogitProbability * minP
+
+        # set all probabilities lower than the cutoff point to 0 and redistribute remaining probabilities using softmax
+        probabilities = torch.where(
+            probabilities<minPCutoff,
+            float('-inf'), 
+            probabilities
+        )
+        probabilities = torch.softmax(probabilities,dim=-1)
+
+        #print(f"max: {maxLogitProbability}")
+        # print(f"mpb: {probabilities}")
+        #print(f"mpc: {minPCutoff}")
+        #print("--")
+
+        idxNext = torch.multinomial(probabilities,num_samples=1)
+
+    else:
+        #turn the logits into probabilities
+        #probabilities = torch.softmax(logits,dim=-1)
+        #select the most probable next word, argmax returns the index of the higest probability which corresponds to a vocabulary index
+        idxNext = torch.argmax(logits,dim=-1,keepdim=True)
+
+    return idxNext
+
+
+def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,minP=None,eosId=3,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     for i in range(maxNewTokens):
         #ensure idx is no larger than the model supported max context size
@@ -46,27 +101,13 @@ def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printN
         #turn batch,ntokens,ctxsize into batch,ctxsize to focus on the last step only
         logits = logits[:,-1,:]
 
-        #topK filtering, if enabled
-        if topK is not None:
-            topLogits,_ = torch.topk(logits,topK)
-            #select the lowest probability still allowed by the topK selection
-            minimumVal = topLogits[:,-1]
-            #returns tensor elements as either their real value (if part of the topK range) or as negative infinity
-            logits = torch.where(
-                logits<minimumVal,
-                torch.tensor(float('-inf')).to(logits.device), 
-                logits
+        # select the next logic using any of the requested selection strategies
+        idxNext = nextLogit(
+                logits=logits,
+                temperature=temperature,
+                topK=topK,
+                minP=minP
             )
-            #apply temperature informed selection if applicable
-            if(temperature>0.0):
-                logits = logits/temperature
-                probabilities = torch.softmax(logits,dim=-1) 
-                idxNext = torch.multinomial(probabilities,num_samples=1)
-        else:
-            #turn the logits into probabilities
-            #probabilities = torch.softmax(logits,dim=-1)
-            #select the most probable next word, argmax returns the index of the higest probability which corresponds to a vocabulary index
-            idxNext = torch.argmax(logits,dim=-1,keepdim=True)
 
         #append the chosen token to the result
         idx = torch.cat((idx,idxNext),dim=1)
@@ -80,7 +121,7 @@ def generateText(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printN
     return idx
 
 
-def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,printNextToken=False,tokenizer=None):
+def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,minP=None,eosId=3,printNextToken=False,tokenizer=None):
     contextSize = model.config[CONTEXT_LENGTH]
     #no_grad ensure that no backwards passes are performed when running the model, in this mode inference is performed efficiently
     with torch.no_grad():
@@ -98,28 +139,13 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,
             #turn batch,ntokens,ctxsize into batch,ctxsize to focus on the last step only
             logits = logits[:,-1,:]
 
-            #topK filtering, if enabled
-            if topK is not None:
-                topLogits,_ = torch.topk(logits,topK)
-                #select the lowest probability still allowed by the topK selection
-                minimumVal = topLogits[:,-1]
-                #returns tensor elements as either their real value (if part of the topK range) or as negative infinity
-                logits = torch.where(
-                    logits<minimumVal,
-                    torch.tensor(float('-inf')).to(logits.device), 
-                    logits
-                )
-                #apply temperature informed selection if applicable
-                if(temperature>0.0):
-                    logits = logits/temperature
-                    probabilities = torch.softmax(logits,dim=-1) 
-                    idxNext = torch.multinomial(probabilities,num_samples=1)
-            else:
-                #turn the logits into probabilities
-                #probabilities = torch.softmax(logits,dim=-1)
-                #select the most probable next word, argmax returns the index of the higest probability which corresponds to a vocabulary index
-                idxNext = torch.argmax(logits,dim=-1,keepdim=True)
-
+            # select the next logic using any of the requested selection strategies
+            idxNext = nextLogit(
+                logits=logits,
+                temperature=temperature,
+                topK=topK,
+                minP=minP
+            )
 
             #append the chosen token to the result
             idx = torch.cat((idx,idxNext),dim=1)
@@ -149,3 +175,5 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,eosId=3,
 
         
     return idx
+
+

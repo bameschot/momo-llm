@@ -23,7 +23,8 @@ parser.add_argument("--prompt", type=str,default="Theory of labour", help="The i
 parser.add_argument("--forceLowerCase", action='store_true', help="ensures that all text becomes lowercase")
 parser.add_argument("--tokensToGenerate", type=int, default=100, help="The number of tokens to generate")
 parser.add_argument("--temperature",type=float, default=0.5,help="The temperature to use when generating tokens, regulates variety in output")
-parser.add_argument("--topK",type=int, default=50,help="The numper of most probable to pick the next token from, together with temperature this regulates variety in ouput")
+parser.add_argument("--topK",type=int, default=-1,help="The numper of most probable to pick the next token from, together with temperature this regulates variety in ouput,, use < 0 to turn off")
+parser.add_argument("--minP",type=float, default=0.1,help="Regularizes the cutoff point of tokens based on the certainty of the models output, disabled if topK is used")
 parser.add_argument("--printNextToken", action='store_true',help="Indicates if the each token should be printed as it is generated")
 parser.add_argument("--compileModel", action='store_true',help="Indicates if the model should be compiled first")
 parser.add_argument('--device', type=str, default=None, help= "indicates the device the model has to run on, if not provided the system autodetects in the order cuda->mps->cpu")
@@ -38,6 +39,7 @@ p_forceLowerCase = args.forceLowerCase
 p_tokensToGenerate = args.tokensToGenerate
 p_temperature = args.temperature     
 p_topK =args.topK
+p_minP =args.minP
 p_printNextToken =args.printNextToken
 p_compileModel = args.compileModel
 p_device = args.device
@@ -96,6 +98,7 @@ with torch.no_grad():
         maxNewTokens=p_tokensToGenerate,
         temperature=p_temperature,
         topK=p_topK,
+        minP=p_minP,
         printNextToken=True,
         tokenizer=tokenizer)
 
