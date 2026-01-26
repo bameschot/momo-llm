@@ -80,6 +80,9 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --
 
 ;
 
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-*-casual-*/**.txt" --outputFileName="synthetic-casual-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
+
+
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-**/**.txt" --outputFileName="synthetic-short-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --outputFileName="synthetic-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
@@ -97,10 +100,9 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-*casual*/**.t
 
 --train
 --8k
-python3 TrainModel.py --model="english-conversations-lc-8k-30_0m" --inputData="processed-data/synthetic-casual-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=8 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --config="CONV_ENG_LC_8K_CONFIG_XS_512_12L_12H_480E" --newModel 
+python3 TrainModel.py --model="english-conversations-lc-8k-30_0m" --inputData="processed-data/synthetic-casual-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=200 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=50  --numberOfEpochs=12 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --config="CONV_ENG_LC_8K_CONFIG_XS_350_8L_16H_336E" --newModel 
 ;
-python3 TrainModel.py --model="english-conversations-lc-8k-30_0m-1" --inputData="processed-data/synthetic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=8 --peakLearningRate=0.001 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_8K_CONFIG_XS_512_12L_12H_480E"  --copyModel
-;
+
 
 --8k 8_
 python3 TrainModel.py --model="english-conversations-lc-8k-8_4m" --inputData="processed-data/synthetic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=100  --numberOfEpochs=4 --peakLearningRate=0.001 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_8K_CONFIG_XS_300_5L_5H_300E"  --newModel
@@ -156,6 +158,6 @@ python3 TrainModel.py --model="english-conversations-full-lc-16k-33_3m" --inputD
 
 
 
-python3 TrainModel.py --model="english-conversations-full-lc-16k-33_4m" --inputData="processed-data/synthetic-conversations-emotion-16k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=200 --evaluationStepFrequency=200 --checkpointStepStorageFrequency=1000 --batchSize=40  --numberOfEpochs=8 --peakLearningRate=0.004 --minimalLearningRate=0.002 --weightDecay=0.002 --config="CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E" --newModel;
-python3 TrainModel.py --model="english-conversations-full-lc-16k-33_4m" --inputData="processed-data/synthetic-conversations-emotion-16k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=200 --evaluationStepFrequency=200 --checkpointStepStorageFrequency=1000 --batchSize=40  --numberOfEpochs=5 --peakLearningRate=0.0025 --minimalLearningRate=0.001 --weightDecay=0.001 --config="CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E" ;
-python3 TrainModel.py --model="english-conversations-full-lc-16k-33_4m" --inputData="processed-data/synthetic-conversations-emotion-16k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=200 --evaluationStepFrequency=200 --checkpointStepStorageFrequency=1000 --batchSize=40  --numberOfEpochs=5 --peakLearningRate=0.0015 --minimalLearningRate=0.0001 --weightDecay=0.0001 --config="CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E" ;
+python3 TrainModel.py --model="english-conversations-full-lc-16k-33_4m" --inputData="processed-data/synthetic-conversations-emotion-16k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=600 --evaluationStepFrequency=200 --checkpointStepStorageFrequency=1000 --batchSize=30  --numberOfEpochs=8 --peakLearningRate=0.004 --minimalLearningRate=0.002 --weightDecay=0.002 --config="CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E" --newModel;
+python3 TrainModel.py --model="english-conversations-full-lc-16k-33_4m" --inputData="processed-data/synthetic-conversations-emotion-16k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=600 --evaluationStepFrequency=200 --checkpointStepStorageFrequency=1000 --batchSize=30  --numberOfEpochs=8 --peakLearningRate=0.0021 --minimalLearningRate=0.001 --weightDecay=0.001 --config="CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E" ;
+python3 TrainModel.py --model="english-conversations-full-lc-16k-33_4m" --inputData="processed-data/synthetic-conversations-emotion-16k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=600 --evaluationStepFrequency=200 --checkpointStepStorageFrequency=1000 --batchSize=30  --numberOfEpochs=8 --peakLearningRate=0.0011 --minimalLearningRate=0.0001 --weightDecay=0.0001 --config="CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E" ;
