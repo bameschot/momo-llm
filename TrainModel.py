@@ -458,7 +458,7 @@ for inputPath in inputPaths:
     #create the dataloaders for the input file
     dlStride = p_stride if p_stride != None else trainingConfig[CONTEXT_LENGTH]
 
-    if "cuda" in deviceName:
+    if "cuda" in deviceName or "cpu" in deviceName:
         dataloaderDtType = torch.long
     else:
         dataloaderDtType = torch.int
