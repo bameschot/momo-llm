@@ -85,13 +85,16 @@ numInputTokens = 0
 contextWindow = model.config[CONTEXT_LENGTH]
 
 inputTxt = ''
-while '/bye' not in inputTxt:
+while True:
     #request input
     print("> ", end=" ")
     inputTxt = input()
     
     if inputTxt == '':
         inputTxt = '.'
+
+    if inputTxt == '/bye':
+        break
 
     if inputTxt == '/model':
         print(print(f"model: {p_model} with {model.numberOfParameters():_} parameters and memory size: {model.memSizeMb():_} mb running on device {device} config: {model.config}"))

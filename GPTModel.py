@@ -85,7 +85,8 @@ class GPTTransformerBlock(nn.Module):
             config[DROPOUT_ATTENTION_RATE],
             dtType,
             device,
-            config[QKV_BIAS]
+            config[QKV_BIAS],
+            config.get(GATED_ATTENTION,True)
         )
         self.feedForward = FeedForwardBypass(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
         self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)

@@ -83,7 +83,7 @@ class RMSNormalization(nn.Module):
 #
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self,numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,dtType,device,qkvBias=False):
+    def __init__(self,numberOfHeads, embeddingDimension, contextLength,attentionDropoutRate,dtType,device,qkvBias=False,gatedAttention=True):
         super().__init__()
 
         assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
@@ -107,7 +107,10 @@ class MultiHeadAttention(nn.Module):
         self.pointerCurrentPosition = 0
 
         #gated attention
-        self.wGate = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
+        if gatedAttention:
+            self.wGate = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
+        else: 
+            self.wGate = None
 
     def forward(self, x:torch.Tensor, useCache=False):
         #input data
@@ -125,7 +128,8 @@ class MultiHeadAttention(nn.Module):
 
 
         #initial attention gate value
-        gate = self.wGate(x)
+        if self.wGate != None:
+            gate = self.wGate(x)
 
         #check for cache usage, if present use, if not register or ignore cache
         if useCache:
@@ -168,7 +172,8 @@ class MultiHeadAttention(nn.Module):
         contextVectors = contextVectors.contiguous().view(batchNr, numberOfTokens,self.embeddingDimension)
 
         #apply gate
-        contextVectors = contextVectors * torch.sigmoid(gate)
+        if self.wGate != None:
+            contextVectors = contextVectors * torch.sigmoid(gate)
         
         # adds a linear projection
         return self.outProjection(contextVectors)

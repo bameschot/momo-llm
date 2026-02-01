@@ -1,8 +1,8 @@
 
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-000-029-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-030-069-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-069-099-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-100-130-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-12k-lc-12000" --tokenizer=sentencepiece --newOutputFile
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-ceev2-000-029-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-ceev2-030-069-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-ceev2-069-099-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-ceev2-100-130-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile
 
 
 python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-000-029-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
@@ -11,10 +11,16 @@ python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-clean
 python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-100-130-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile
 
 
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-000-029-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-030-069-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-069-099-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-100-130-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-000-029-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-030-069-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-069-099-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-100-130-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile
+
+
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[0-2][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-000-029-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-12k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[3-6][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-030-069-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-12k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-0[6-9][9-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-069-099-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-12k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/english-subtitles-cleaned-1[0-9][0-9].txt" --outputFileName="english-subtitles-cleaned-cee-l-100-130-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=750 --vocabulary="conversational-emotion-english-12k-lc-16000" --tokenizer=sentencepiece --newOutputFile 
 
 
 
@@ -39,7 +45,7 @@ python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --pro
 echo '--10m suprised' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a conversation where you are suprised by an event between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-suprised-conversations" --generationSizeMb=10;
 echo '--6m interested' ;
-python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a conversation asking about personal interests between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-interested-conversations" --generationSizeMb=10 ;
+python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a conversation about hobbies between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-interested-conversations" --generationSizeMb=90 ;
 echo '--15m joy' ;
 python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --prompt="generate a joyous conversation between 300 and 1200 words with sentences that are no larger than 50 words, only output the conversations and no other text, put the participants names between brackets [$name], do not use names in the conversation" --outputFileName="synthetic-emotion-short-joyous-conversations" --generationSizeMb=10 ;
 echo '--57m sad' ;
@@ -67,8 +73,8 @@ python3 OllamaGenerateTestData.py --model="llama3.2:3b" --printInterval=10 --pro
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=8000 --vocabularyName="conversational-english-8k-lc" --forceLowerCase --newTrainingFile ;  
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=8000 --vocabularyName="conversational-emotion-english-8k-lc" --forceLowerCase --newTrainingFile  
 
-python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=12000 --vocabularyName="conversational-english-12k-lc" --forceLowerCase --newTrainingFile ;  
-python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=12000 --vocabularyName="conversational-emotion-english-12k-lc" --forceLowerCase --newTrainingFile  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=12000 --vocabularyName="conversational-english-12k-v2-lc" --forceLowerCase --newTrainingFile ;  
+python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=12000 --vocabularyName="conversational-emotion-english-12k-v2-lc" --forceLowerCase --newTrainingFile  
 
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt" --vocabSize=16000 --vocabularyName="conversational-english-16k-lc" --forceLowerCase --newTrainingFile  
 python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-emotion-*/**.txt" --vocabSize=16000 --vocabularyName="conversational-emotion-english-16k-lc" --forceLowerCase --newTrainingFile  
@@ -81,7 +87,7 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --
 ;
 
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-*-casual-*/**.txt" --outputFileName="synthetic-casual-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-casual-*/**.txt|./input-data/synthetic-short-romantic-*/**.txt|./input-data/synthetic-short-upbeat-*/**.txt" --outputFileName="synthetic-short-cru-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=400 --vocabulary="conversational-emotion-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-short-casual-*/**.txt|./input-data/synthetic-emotion-short-romantic-*/**.txt|./input-data/synthetic-emotion-short-upbeat-*/**.txt" --outputFileName="synthetic-short-cru-conversations-8k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=400 --vocabulary="conversational-emotion-english-8k-lc-8000" --tokenizer=sentencepiece --newOutputFile ;
 
 
 
@@ -95,7 +101,7 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-*/**.
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-**/**.txt" --outputFileName="synthetic-short-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --outputFileName="synthetic-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=500 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
-python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-*/**.txt" --outputFileName="synthetic-conversations-emotion-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=600 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-*/**.txt" --outputFileName="synthetic-conversations-emotion-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=800 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
 
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-casual/**.txt" --outputFileName="synthetic-short-conversations-emotion-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=600 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
 
@@ -105,9 +111,10 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-casual/
 python3 TrainModel.py --model="english-conversations-lc-8k-js-12_7m" --inputData="processed-data/synthetic-casual-conversations-8k/**.bin" --device="cuda" --compileModel --startContext="hey how are you?[eos]" --warmupSteps=200 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=50  --numberOfEpochs=12 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --config="CONV_ENG_LC_8K_CONFIG_XS_350_8L_16H_336E" --newModel 
 ;
 
+python3 TrainModel.py --model="english-conversations-lc-8k-js-12_7m" --inputData="processed-data/synthetic-casual-conversations-8k/**.bin" --device="cuda" --compileModel --startContext="hey how are you?[eos]" --warmupSteps=200 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=12 --peakLearningRate=0.003 --minimalLearningRate=0.0005 --weightDecay=0.0005 --config="CONV_ENG_LC_8K_CONFIG_XS_350_8L_16H_336E" --newModel
 
 --8k 8_
-python3 TrainModel.py --model="english-conversations-lc-8k-8_4m" --inputData="processed-data/synthetic-short-conversations-8k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=100  --numberOfEpochs=4 --peakLearningRate=0.001 --minimalLearningRate=0.0001 --weightDecay=0.0005 --shuffleBatches --config="CONV_ENG_LC_8K_CONFIG_XS_300_5L_5H_300E"  --newModel
+python3 TrainModel.py --model="english-conversations-lc-8k-js-10_4m" --inputData="processed-data/synthetic-short-cru-conversations-8k/**.bin" --device="cuda" --startContext="hey how are you?[eos]" --warmupSteps=300 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=10 --peakLearningRate=0.003 --minimalLearningRate=0.0001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_8L_8H_256E" --compileModel --newModel
 
 
 --12k - 19_8m
@@ -141,6 +148,19 @@ python3 TrainModel.py --model="english-conversations-lc-12k-40_2m-1" --inputData
 
 python3 TrainModel.py --model="english-conversations-lc-lambda-12k-40_2m-1" --inputData="processed-data/synthetic-conversations-12k/**.bin" --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=25  --numberOfEpochs=3 --peakLearningRate=0.00001 --minimalLearningRate=0.00001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_350_14L_10H_500E" --copyModel
 
+
+python3 TrainModel.py --model="english-conversations-lc-12k-23_9m" --inputData="processed-data/synthetic-conversations-emotion-12k/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=15 --peakLearningRate=0.001 --minimalLearningRate=0.00005 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_450E" --newModel
+
+python3 TrainModel.py --model="english-conversations-lc-12k-24_7m" --inputData="processed-data/synthetic-conversations-emotion-12k/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=15 --peakLearningRate=0.001 --minimalLearningRate=0.00005 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_8L_20H_460E" --newModel
+
+-- 38_3,
+python3 TrainModel.py --model="english-conversations-lc-12k-38_3m" --inputData="processed-data/synthetic-conversations-emotion-12k/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=15 --peakLearningRate=0.001 --minimalLearningRate=0.00005 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E" --newModel
+python3 TrainModel.py --model="english-conversations-lc-12k-38_3m" --inputData="processed-data/synthetic-conversations-emotion-12k/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=2 --peakLearningRate=0.000 --minimalLearningRate=0.00005 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E"
+
+
+--34_9,
+python3 TrainModel.py --model="english-conversations-lc-12k-34_9m" --inputData="processed-data/synthetic-conversations-emotion-12k/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=15 --peakLearningRate=0.001 --minimalLearningRate=0.00005 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E_NA" --newModel
+python3 TrainModel.py --model="english-conversations-lc-12k-34_9m" --inputData="processed-data/synthetic-conversations-emotion-12k/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=2 --peakLearningRate=0.0001 --minimalLearningRate=0.00005 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E_NA"
 
 --16k
 
