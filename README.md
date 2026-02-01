@@ -20,6 +20,7 @@ SIMPLE_ENG_4K_CONFIG_XXS_786_16L_14H = {
     DROPOUT_ATTENTION_RATE: 0.1,
     DROPOUT_SHORTCUT_RATE: 0.1,
     QKV_BIAS: False,
+    GATED_ATTENTION: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "wiki-simple-english-4k-lc-4000"
