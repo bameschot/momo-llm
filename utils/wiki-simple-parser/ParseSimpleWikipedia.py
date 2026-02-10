@@ -23,6 +23,8 @@ def readSimpleWikipedia(fileName):
     invalidTitleChars = '<|>|\||-|\"|\'|_|§| |\!|\–|\.\.\.|“|→|\,|\&'
     invalidLineChars = '<|>|\|'
 
+    singleFileWriteName="wiki-simple-english-cleaned"
+
     with open(inputFilePath,"r",encoding = "utf-8") as input:    
         line = input.readline()
         article = ""
@@ -47,14 +49,20 @@ def readSimpleWikipedia(fileName):
                     try:
                         totalOutputArticles += 1
 
-                        writeTitle = previousTitle.replace(' ','_')
-                        writeAppendFile(writeTitle,'titles.txt')
-                        writeAppendFile(article,writeTitle+'.txt')
+                        article = article.replace('\n','').replace('()','').replace('( )','').replace('(-)','')
+
+                        singleArticleWriteTitle = previousTitle.replace(' ','_')
+                        print(f'writing: {previousTitle}')
+
+                        # writeAppendFile(singleArticleWriteTitle,'titles.txt')
+                        # writeAppendFile(article,singleArticleWriteTitle+'.txt')
+                        writeAppendFile(article,singleFileWriteName+'.txt')
+                        
                     except:
                         None
 
-                # article = f'++++++++++++++++\n{title}\n================\n'
-                article = f'\n{title}\n'
+                article = f'++++++++++++++++{title}================\n'
+                # article = f'\n{title}\n'
             
             elif line!='\n':
                 if not any(line in s for s in invalidLineChars):
