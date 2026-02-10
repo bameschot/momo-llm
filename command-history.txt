@@ -96,9 +96,13 @@ python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-**/**.t
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --outputFileName="synthetic-conversations-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=800 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-*/**.txt" --outputFileName="synthetic-conversations-emotion-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=600 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
 
+-- just wiki
 python3 PreProcessDataFiles.py --inputData="./input-data/wiki-simple-english-cleaned/**.txt" --outputFileName="wiki-simple-english-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=600 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
 
-;
+-- full synth conversations and wiki
+python3 PreProcessDataFiles.py --inputData="./input-data/wiki-simple-english-cleaned/**.txt|./input-data/synthetic-**/**.txt" --outputFileName="wiki-conversation-english-12k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1000 --vocabulary="conversational-emotion-english-12k-lc-v2-12000" --tokenizer=sentencepiece --newOutputFile ;
+
+
 
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-casual-conversations/**.txt" --outputFileName="synthetic-casual-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
 python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-short-**/**.txt" --outputFileName="synthetic-short-conversations-16k" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=150 --vocabulary="conversational-emotion-english-16k-lc-16000" --tokenizer=sentencepiece --newOutputFile ;
