@@ -49,7 +49,7 @@ def readSimpleWikipedia(fileName):
                     try:
                         totalOutputArticles += 1
 
-                        article = article.replace('\n','').replace('()','').replace('( )','').replace('(-)','')
+                        article = article.replace('.\n','. ').replace('\n','').replace('()','').replace('( )','').replace('(-)','')
 
                         singleArticleWriteTitle = previousTitle.replace(' ','_')
                         print(f'writing: {previousTitle}')
