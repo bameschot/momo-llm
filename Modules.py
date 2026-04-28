@@ -1,3 +1,5 @@
+from math import sqrt
+
 import torch
 import torch.nn as nn
 
@@ -64,9 +66,15 @@ class LayerNormalization(nn.Module):
         return self.scale * normalizedX + self.shift
     
 class RMSNormalization(nn.Module):
-    def __init__(self,embeddingDimension,dtType,device):
+    def __init__(self,embeddingDimension,layer,dtType,device):
         super().__init__()
-        self.scale = nn.Parameter(torch.ones(embeddingDimension,dtype=dtType,device=device))
+        self.scale = nn.Parameter(
+            torch.full(
+                size= (embeddingDimension,),
+                fill_value=1/sqrt(layer) if layer != None else 1,
+                dtype=dtType,
+                device=device)
+            )
 
     def forward(self,x):
         rms = torch.sqrt(torch.mean(x ** 2, dim=-1,keepdim=True) + 1e-5)

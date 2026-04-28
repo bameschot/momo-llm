@@ -13,7 +13,7 @@ class GPTModel(nn.Module):
         #create the token embedding  
         self.tokenEmbeddings = nn.Embedding(config[VOCABULARY_SIZE],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
         #create the positional embedding
-        self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
+        # self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
         #create the dropout embedding
         if self.config[DROPOUT_EMBEDDING_RATE] > 0:
             self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
@@ -21,10 +21,10 @@ class GPTModel(nn.Module):
             self.dropoutEmbeddings = None
         #create the transformer blocks
         self.tranformerBlocks = nn.ModuleList(
-            [GPTTransformerBlock(config,dtType=dtType,device=device) for _ in range(config[N_LAYERS])]
+            [GPTTransformerBlock(config,dtType=dtType,layer=layerDepth+1,device=device) for layerDepth in range(config[N_LAYERS])]
         )
         #create the final normalization layer
-        self.finalNormalization = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
+        self.finalNormalization = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=None,dtType=dtType,device=device)
         #create OutHead as a linear transformation
         self.outHead = nn.Linear(config[EMBEDDING_DIMENSION],config[VOCABULARY_SIZE],bias=False,dtype=dtType,device=device)
 
@@ -37,15 +37,15 @@ class GPTModel(nn.Module):
     
         #embeddings and positional embeddings for the input, ensures that the embeddings are on the correct device
         inTokenEmbeddings = self.tokenEmbeddings(inIndex)
-        if useCache:
-            positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.int)
-            self.currentPos+=sequenceLength
-        else:
-            positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.int)
-        inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
+        # if useCache:
+        #     positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.int)
+        #     self.currentPos+=sequenceLength
+        # else:
+        #     positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.int)
+        # inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
 
         #modify the embeddings with the positional embeddings
-        x = inTokenEmbeddings + inPositionalEmbeddings
+        x = inTokenEmbeddings #+ inPositionalEmbeddings
         
         #apply dropout
         if self.dropoutEmbeddings:
@@ -76,7 +76,7 @@ class GPTModel(nn.Module):
 
 
 class GPTTransformerBlock(nn.Module):
-    def __init__(self,config,dtType,device):
+    def __init__(self,config,layer,dtType,device):
         super().__init__()
         self.attention = MultiHeadAttention(
             config[N_HEADS], 
@@ -89,8 +89,12 @@ class GPTTransformerBlock(nn.Module):
             config.get(GATED_ATTENTION,True)
         )
         self.feedForward = FeedForwardBypass(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
-        self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
-        self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
+        self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=None,dtType=dtType,device=device)
+        self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=layer,dtType=dtType,device=device)
+        self.normalizationLayer3 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=None,dtType=dtType,device=device)
+        self.normalizationLayer4 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=layer,dtType=dtType,device=device)
+
+        
         if config[DROPOUT_SHORTCUT_RATE] > 0:
             self.dropoutShortcut = nn.Dropout(config[DROPOUT_SHORTCUT_RATE])
         else: 
@@ -100,16 +104,22 @@ class GPTTransformerBlock(nn.Module):
         shortcut = x
         x = self.normalizationLayer1(x)
         x = self.attention(x,useCache)
+        x = self.normalizationLayer2(x)
+
         if self.dropoutShortcut:
             x = self.dropoutShortcut(x)
         x = x + shortcut
 
+
         shortcut = x
-        x = self.normalizationLayer2(x)
+        x = self.normalizationLayer3(x)
         x = self.feedForward(x)
+        x = self.normalizationLayer4(x)
+
         if self.dropoutShortcut:
             x = self.dropoutShortcut(x)
         x = x + shortcut
+
 
         return x
     
