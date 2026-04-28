@@ -36,14 +36,13 @@ Momo-LLM implements a decoder-only transformer (GPT-style) with the following co
 The top-level `GPTModel` contains:
 
 - **Token embeddings** — vocabulary-indexed embedding table
-- **Positional embeddings** — learned position encodings up to `CONTEXT_LENGTH`
 - **Stacked transformer blocks** (`GPTTransformerBlock`) — `N_LAYERS` deep
 - **RMS normalization** — applied before the output head
 - **Linear output head** — projects to vocabulary logits
 
 Each `GPTTransformerBlock` contains:
-- Multi-head self-attention with RMS pre-norm and a skip connection
-- SwiGLU feed-forward network with RMS pre-norm and a skip connection
+- Multi-head self-attention with sandwich normalization (pre-norm + post-norm) and a skip connection
+- SwiGLU feed-forward network with sandwich normalization (pre-norm + post-norm) and a skip connection
 - Optional dropout at embedding, attention, and shortcut sites
 
 ### Attention (Modules.py)
@@ -111,8 +110,6 @@ The root module. Its `forward(inIndex, useCache)` pass runs:
 
 ```
 token embeddings (nn.Embedding: VOCABULARY_SIZE × EMBEDDING_DIMENSION)
-    +
-positional embeddings (nn.Embedding: CONTEXT_LENGTH × EMBEDDING_DIMENSION)
     ↓
 [optional] embedding dropout
     ↓
@@ -131,31 +128,35 @@ The `useCache` flag enables KV caching for fast autoregressive generation. `rese
 
 ### GPTTransformerBlock
 
-Each block applies two sub-layers with pre-normalization and skip connections:
+Each block applies two sub-layers with sandwich normalization (pre-norm and post-norm) around the core operation and a skip connection:
 
 ```
 x ──────────────────────────────────────────────┐
 │                                               │
-RMSNormalization                                │
+normalizationLayer1  (pre-norm,  scale init: 1) │
     ↓                                           │
 MultiHeadAttention                              │
     ↓                                           │
+normalizationLayer2  (post-norm, scale init: 1/√layer)
+    ↓                                           │
 [optional] shortcut dropout                     │
     ↓                                           │
 x = x + shortcut ◄─────────────────────────────┘
 
 x ──────────────────────────────────────────────┐
 │                                               │
-RMSNormalization                                │
+normalizationLayer3  (pre-norm,  scale init: 1) │
     ↓                                           │
 FeedForwardBypass                               │
+    ↓                                           │
+normalizationLayer4  (post-norm, scale init: 1/√layer)
     ↓                                           │
 [optional] shortcut dropout                     │
     ↓                                           │
 x = x + shortcut ◄─────────────────────────────┘
 ```
 
-Each block holds two independent `RMSNormalization` instances (one per sub-layer) and one optional `nn.Dropout` shared across both skip connections.
+Each block holds four `RMSNormalization` instances and one optional `nn.Dropout` shared across both skip connections. The post-norm scale parameters are initialised to `1/√layer` (where `layer` is the 1-based block depth) to keep output magnitudes stable at initialisation across deep networks.
 
 ---
 
@@ -220,6 +221,15 @@ x
 | `LayerNormalization` | `(x − mean) / std × scale + shift` | `scale`, `shift` (shape: embed) | Available but not used by default |
 
 Both use ε = 1e-5 for numerical stability. `RMSNormalization` skips mean subtraction, matching the LLaMA normalization style.
+
+`RMSNormalization` takes an optional `layer` argument that controls the initial value of `scale`:
+
+| `layer` argument | Scale init | Used for |
+|---|---|---|
+| `None` | `1.0` | Pre-norm layers (`normalizationLayer1`, `normalizationLayer3`), final norm |
+| `int` (block depth) | `1 / √layer` | Post-norm layers (`normalizationLayer2`, `normalizationLayer4`) |
+
+Initialising post-norm scales to `1/√layer` keeps the residual contribution of deeper blocks small at the start of training, stabilising gradient flow in deep networks.
 
 ---
 
