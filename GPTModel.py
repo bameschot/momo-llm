@@ -10,10 +10,16 @@ class GPTModel(nn.Module):
         super().__init__()
         self.config=config
         dtType = getDataTypeFromConfig(config)
+        
         #create the token embedding  
         self.tokenEmbeddings = nn.Embedding(config[VOCABULARY_SIZE],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
-        #create the positional embedding
-        # self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
+        
+        #create the positional embedding unless configured to use NOPE encoding
+        if not config.get(NOPE_ENCODING,False):
+            self.positionalEmbeddings = nn.Embedding(config[CONTEXT_LENGTH],config[EMBEDDING_DIMENSION],dtype=dtType,device=device)
+        else:
+            self.positionalEmbeddings = None
+        
         #create the dropout embedding
         if self.config[DROPOUT_EMBEDDING_RATE] > 0:
             self.dropoutEmbeddings = nn.Dropout(config[DROPOUT_EMBEDDING_RATE])
@@ -37,15 +43,20 @@ class GPTModel(nn.Module):
     
         #embeddings and positional embeddings for the input, ensures that the embeddings are on the correct device
         inTokenEmbeddings = self.tokenEmbeddings(inIndex)
-        # if useCache:
-        #     positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.int)
-        #     self.currentPos+=sequenceLength
-        # else:
-        #     positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.int)
-        # inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
+        
+        #add the positional embeddings if not using nope
+        if self.positionalEmbeddings != None:
+            if useCache:
+                positionalIds = torch.arange(self.currentPos,self.currentPos+sequenceLength,device=inIndex.device,dtype=torch.int)
+                self.currentPos+=sequenceLength
+            else:
+                positionalIds = torch.arange(0, sequenceLength, device=inIndex.device, dtype=torch.int)
+            inPositionalEmbeddings = self.positionalEmbeddings(positionalIds).unsqueeze(0)
 
-        #modify the embeddings with the positional embeddings
-        x = inTokenEmbeddings #+ inPositionalEmbeddings
+            #modify the embeddings with the positional embeddings
+            x = inTokenEmbeddings + inPositionalEmbeddings
+        else:
+            x = inTokenEmbeddings
         
         #apply dropout
         if self.dropoutEmbeddings:

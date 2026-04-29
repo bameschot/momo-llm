@@ -12,6 +12,7 @@ DROPOUT_ATTENTION_RATE = "AttentionDropoutRate"
 DROPOUT_SHORTCUT_RATE = "TransformerDropoutRate"
 QKV_BIAS = "QKVBias"
 GATED_ATTENTION = "GatedAttention"
+NOPE_ENCODING = "NopeEncoding"
 
 DEFAULT_DATA_TYPE = "DefaultDataType"
 
@@ -36,6 +37,7 @@ CONV_ENG_LC_16K_CONFIG_XS_500_20L_15H_645E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
@@ -54,6 +56,7 @@ CONV_ENG_LC_16K_CONFIG_XS_500_8L_16H_512E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
@@ -73,6 +76,7 @@ CONV_ENG_LC_16K_CONFIG_XS_200_2L_5H_100E = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-16k-lc-16000"
@@ -96,6 +100,7 @@ CONV_ENG_LC_12K_CONFIG_XS_500_16L_13H_650E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -114,6 +119,7 @@ CONV_ENG_LC_12K_CONFIG_XS_500_12L_20H_660E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -134,6 +140,7 @@ CONV_ENG_LC_12K_CONFIG_XS_350_14L_10H_500E = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -152,6 +159,7 @@ CONV_ENG_LC_12K_CONFIG_XS_500_8L_16H_512E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -170,6 +178,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_13L_15H_675E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -188,6 +197,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E_NA = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: False,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -207,6 +217,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -226,6 +237,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_8L_20H_460E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -244,6 +256,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_450E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -262,6 +275,26 @@ CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_220E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
+    DEFAULT_DATA_TYPE: torch.bfloat16,
+    TOKENIZER_TYPE: "sentencepiece",
+    TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
+}
+
+#15_175_050
+CONV_ENG_LC_12K_CONFIG_XS_800_8L_10H_330E = {
+    CONFIG_NAME: "CONV_ENG_LC_12K_CONFIG_XS_800_8L_10H_330E",
+    VOCABULARY_SIZE: 12000,
+    CONTEXT_LENGTH: 800,
+    EMBEDDING_DIMENSION: 330, #33
+    N_HEADS: 10,
+    N_LAYERS: 8,
+    DROPOUT_EMBEDDING_RATE: 0.0,
+    DROPOUT_ATTENTION_RATE: 0.0,
+    DROPOUT_SHORTCUT_RATE: 0.0,
+    QKV_BIAS: False,
+    GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -280,6 +313,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_30L_20H_512E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -298,6 +332,7 @@ CONV_ENG_LC_12K_CONFIG_XS_400_30L_16H_400E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -317,6 +352,7 @@ CONV_ENG_LC_12K_CONFIG_XS_300_20L_20H_400E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -335,6 +371,7 @@ CONV_ENG_LC_12K_CONFIG_XS_200_20L_20H_300E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -353,6 +390,7 @@ CONV_ENG_LC_12K_CONFIG_XS_200_20L_10H_200E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-12k-lc-v2-12000"
@@ -376,6 +414,7 @@ CONV_ENG_LC_8K_CONFIG_XS_350_8L_16H_336E = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-8k-lc-8000"
@@ -394,6 +433,7 @@ CONV_ENG_LC_8K_CONFIG_XS_500_8L_16H_512E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-8k-lc-8000"
@@ -412,6 +452,7 @@ CONV_ENG_LC_8K_CONFIG_XS_400_8L_8H_256E = {
     DROPOUT_SHORTCUT_RATE: 0.0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.bfloat16,
     TOKENIZER_TYPE: "sentencepiece",
     TOKENIZER_NAME: "conversational-emotion-english-8k-lc-8000"
@@ -433,6 +474,7 @@ GPT_CONFIG_SMALL = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: True,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.float32,
     TOKENIZER_TYPE: "gpt2",
     TOKENIZER_NAME: None
@@ -453,6 +495,7 @@ GPT_CONFIG_MEDIUM = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: False,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.float32,
     TOKENIZER_TYPE: "gpt2",
     TOKENIZER_NAME: None
@@ -470,6 +513,7 @@ GPT_CONFIG_LARGE = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: False,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.float32,
     TOKENIZER_TYPE: "gpt2",
     TOKENIZER_NAME: None
@@ -488,6 +532,7 @@ GPT_CONFIG_X_LARGE = {
     DROPOUT_SHORTCUT_RATE: 0,
     QKV_BIAS: False,
     GATED_ATTENTION: False,
+    NOPE_ENCODING: False,
     DEFAULT_DATA_TYPE: torch.float32,
     TOKENIZER_TYPE: "gpt2",
     TOKENIZER_NAME: None
@@ -513,6 +558,7 @@ modelConfigs = {
     "CONV_ENG_LC_12K_CONFIG_XS_400_30L_20H_512E": CONV_ENG_LC_12K_CONFIG_XS_400_30L_20H_512E,
     "CONV_ENG_LC_12K_CONFIG_XS_400_30L_16H_400E": CONV_ENG_LC_12K_CONFIG_XS_400_30L_16H_400E,
     "CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_220E": CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_220E,
+    "CONV_ENG_LC_12K_CONFIG_XS_800_8L_10H_330E": CONV_ENG_LC_12K_CONFIG_XS_800_8L_10H_330E,
     "CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_450E": CONV_ENG_LC_12K_CONFIG_XS_400_8L_10H_450E,
     "CONV_ENG_LC_12K_CONFIG_XS_400_8L_20H_460E": CONV_ENG_LC_12K_CONFIG_XS_400_8L_20H_460E,
     "CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E": CONV_ENG_LC_12K_CONFIG_XS_400_16L_20H_460E, 
