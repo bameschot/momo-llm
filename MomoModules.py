@@ -192,6 +192,120 @@ class MultiHeadAttention(nn.Module):
 
 
 
+class GroupedQueryAttention(nn.Module):
+    def __init__(self,numberOfHeads,numberOfKvGroups, embeddingDimension, contextLength,attentionDropoutRate,dtType,device,qkvBias=False,gatedAttention=True):
+        super().__init__()
+
+        assert(embeddingDimension % numberOfHeads == 0), f"Output dimension must be divisable by the number of heads {embeddingDimension}/{numberOfHeads}"
+        assert(numberOfHeads % numberOfKvGroups == 0), f"Number of heads must be divisable by the number of kv groups {numberOfHeads}/{numberOfKvGroups}"
+
+        self.contextLength = contextLength
+        self.embeddingDimension=embeddingDimension
+        self.numberOfHeads = numberOfHeads 
+        self.numberOfKvGroups = numberOfKvGroups
+        self.headDimension = embeddingDimension // numberOfHeads
+        self.kvGroupSize = numberOfHeads // numberOfKvGroups
+
+        self.wQuery = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
+        self.wKey = nn.Linear(embeddingDimension,self.numberOfKvGroups*self.headDimension,bias=qkvBias,device=device,dtype=dtType)
+        self.wValue = nn.Linear(embeddingDimension,self.numberOfKvGroups*self.headDimension,bias=qkvBias,device=device,dtype=dtType)
+        if attentionDropoutRate > 0:
+            self.dropout = nn.Dropout(attentionDropoutRate)
+        else:
+            self.dropout = None
+        self.outProjection = nn.Linear(embeddingDimension,embeddingDimension,device=device,dtype=dtType)        
+        self.register_buffer('mask', torch.triu(torch.ones(contextLength,contextLength,dtype=dtType,device=device),diagonal=1),persistent=False)
+
+        #cache
+        self.register_buffer('cacheK',None,persistent=False)
+        self.register_buffer('cacheV',None,persistent=False)
+        self.pointerCurrentPosition = 0
+
+        #gated attention
+        if gatedAttention:
+            self.wGate = nn.Linear(embeddingDimension,embeddingDimension,bias=qkvBias,device=device,dtype=dtType)
+        else: 
+            self.wGate = None
+
+    def forward(self, x:torch.Tensor, useCache=False):
+        #input data
+        batchNr, numberOfTokens, _ = x.shape
+
+        #get the keys queries and values for each input
+        queries = self.wQuery(x)
+        keysNew = self.wKey(x)
+        valuesNew = self.wValue(x)
+
+        #create views for each of the heads
+        queries = queries.view(batchNr, numberOfTokens, self.numberOfHeads, self.headDimension).transpose(1, 2)
+        keysNew = keysNew.view(batchNr, numberOfTokens, self.numberOfKvGroups, self.headDimension).transpose(1, 2)
+        valuesNew = valuesNew.view(batchNr, numberOfTokens, self.numberOfKvGroups, self.headDimension).transpose(1, 2)
+
+
+        #initial attention gate value
+        if self.wGate != None:
+            gate = self.wGate(x)
+
+        #check for cache usage, if present use, if not register or ignore cache
+        if useCache:
+            if self.cacheK is None:
+                self.cacheK, self.cacheV = keysNew, valuesNew
+            else:
+                self.cacheK = torch.cat([self.cacheK, keysNew], dim=2)
+                self.cacheV = torch.cat([self.cacheV, valuesNew], dim=2)
+            keysBase, valuesBase = self.cacheK, self.cacheV
+        else:
+            keysBase, valuesBase = keysNew, valuesNew
+
+        keys = keysBase.repeat_interleave(self.kvGroupSize, dim=1)
+        values = valuesBase.repeat_interleave(self.kvGroupSize, dim=1)  
+
+        #determine the attention scores by calculating the dot product for each head
+        attentionScores = queries @ keys.transpose(2,3)
+
+        #apply the mask on only the new tokens if cached
+        numTokensQ = queries.shape[-2]
+        numTokensK = keys.shape[-2]
+        
+        if useCache:
+            qPositions = torch.arange(
+                self.pointerCurrentPosition,
+                self.pointerCurrentPosition + numTokensQ,
+                device=x.device,
+                dtype=torch.long,
+            )
+            self.pointerCurrentPosition += numTokensQ
+        else:
+            qPositions = torch.arange(numTokensQ, device=x.device, dtype=torch.long)
+            self.pointerCurrentPosition = 0
+        kPositions = torch.arange(numTokensK, device=x.device, dtype=torch.long)
+        maskBool = qPositions.unsqueeze(-1) < kPositions.unsqueeze(0)
+
+        
+        #mask the attention scores with a mask of which the upper diagonal filled is infinites
+        attentionScores.masked_fill_(maskBool,-torch.inf)
+        #normalized attention weights
+        attentionWeights = torch.softmax(attentionScores / keys.shape[-1] ** 0.5,dim=-1)
+        #apply the dropout mask to the masked and normalized weights
+        if self.dropout:
+            attentionWeights = self.dropout(attentionWeights)
+        
+        #calculate the context vector by multipying the attention weights with the value and combine the head results
+        contextVectors = (attentionWeights @ values).transpose(1,2)
+        contextVectors = contextVectors.contiguous().view(batchNr, numberOfTokens,self.embeddingDimension)
+
+        #apply gate
+        if self.wGate != None:
+            contextVectors = contextVectors * torch.sigmoid(gate)
+        
+        # adds a linear projection
+        return self.outProjection(contextVectors)
+    
+    def resetCache(self):
+        self.cacheK, self.cacheV = None, None
+        self.pointerCurrentPosition = 0 
+
+
 #
 #
 # old self attention

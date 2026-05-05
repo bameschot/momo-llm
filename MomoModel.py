@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from MomoModelConfig import *
 
-from MomoModules import RMSNormalization, FeedForwardBypass, MultiHeadAttention
+from MomoModules import GroupedQueryAttention, RMSNormalization, FeedForwardBypass, MultiHeadAttention
 
 class MomoModel(nn.Module):
     def __init__(self,config,device):
@@ -89,16 +89,31 @@ class MomoModel(nn.Module):
 class MomoTransformerBlock(nn.Module):
     def __init__(self,config,layer,dtType,device):
         super().__init__()
-        self.attention = MultiHeadAttention(
-            config[N_HEADS], 
-            config[EMBEDDING_DIMENSION], 
-            config[CONTEXT_LENGTH],
-            config[DROPOUT_ATTENTION_RATE],
-            dtType,
-            device,
-            config[QKV_BIAS],
-            config.get(GATED_ATTENTION,True)
-        )
+        #switch on attmod here
+        attMode = config.get(ATTENTION_TYPE,'mha')
+        if(attMode == ATTENTION_TYPE_GROUPED_QUERY_ATTENTION):
+            self.attention = GroupedQueryAttention(
+                config[N_HEADS], 
+                config[N_KV_GROUPS],
+                config[EMBEDDING_DIMENSION], 
+                config[CONTEXT_LENGTH],
+                config[DROPOUT_ATTENTION_RATE],
+                dtType,
+                device,
+                config[QKV_BIAS],
+                config.get(GATED_ATTENTION,True)
+            )
+        else: # mha
+            self.attention = MultiHeadAttention(
+                config[N_HEADS], 
+                config[EMBEDDING_DIMENSION], 
+                config[CONTEXT_LENGTH],
+                config[DROPOUT_ATTENTION_RATE],
+                dtType,
+                device,
+                config[QKV_BIAS],
+                config.get(GATED_ATTENTION,True)
+            )
         self.feedForward = FeedForwardBypass(embeddingDimension=config[EMBEDDING_DIMENSION],dtType=dtType,device=device)
         self.normalizationLayer1 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=None,dtType=dtType,device=device)
         self.normalizationLayer2 = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=layer,dtType=dtType,device=device)
