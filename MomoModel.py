@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from MomoModelConfig import *
 
-from Modules import RMSNormalization, FeedForwardBypass, MultiHeadAttention
+from MomoModules import RMSNormalization, FeedForwardBypass, MultiHeadAttention
 
 class MomoModel(nn.Module):
     def __init__(self,config,device):

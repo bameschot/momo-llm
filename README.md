@@ -45,7 +45,7 @@ Each `MomoTransformerBlock` contains:
 - SwiGLU feed-forward network with sandwich normalization (pre-norm + post-norm) and a skip connection
 - Optional dropout at embedding, attention, and shortcut sites
 
-### Attention (Modules.py)
+### Attention (MomoModules.py)
 
 `MultiHeadAttention` implements causal scaled dot-product attention with:
 
