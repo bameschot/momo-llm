@@ -1,7 +1,7 @@
 import argparse
 
 from Data import *
-from GPTModelConfig import *
+from MomoModelConfig import *
 
 ########################################
 #Functions

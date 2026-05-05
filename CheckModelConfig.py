@@ -1,6 +1,6 @@
 import argparse
-from GPTModel import GPTModel
-from GPTModelConfig import *
+from MomoModel import MomoModel
+from MomoModelConfig import *
 
 ########################################
 #Parameters
@@ -20,7 +20,7 @@ p_config = args.config
 
 if p_config is not None:
     config = modelConfigs[p_config]
-    model = GPTModel(config,'cpu')
+    model = MomoModel(config,'cpu')
     print(f"Starting new model {p_config} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
 
      

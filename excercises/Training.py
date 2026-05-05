@@ -2,8 +2,8 @@ import tiktoken
 import torch
 import torch.nn as nn
 
-from GPTModel import GPTModel
-from GPTModelConfig import *
+from MomoModel import MomoModel
+from MomoModelConfig import *
 #from main import GPTModel, GPT_CONFIG_124M
 
 def simpleTextGeneration(model, idx, maxNewTokens):
@@ -37,7 +37,7 @@ def tokensToText(tokens,tkz):
 
 torch.manual_seed(123)
 tokenizer = tiktoken.get_encoding("gpt2")
-model = GPTModel(GPT_CONFIG_124M)
+model = MomoModel(GPT_CONFIG_124M)
 
 # startContext = "Every effort moves you"
 

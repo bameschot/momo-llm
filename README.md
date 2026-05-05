@@ -31,16 +31,16 @@ Supports multiple hardware backends (CUDA, MPS, CPU), configurable transformer a
 
 Momo-LLM implements a decoder-only transformer (GPT-style) with the following components:
 
-### Model (GPTModel.py)
+### Model (MomoModel.py)
 
-The top-level `GPTModel` contains:
+The top-level `MomoModel` contains:
 
 - **Token embeddings** — vocabulary-indexed embedding table
-- **Stacked transformer blocks** (`GPTTransformerBlock`) — `N_LAYERS` deep
+- **Stacked transformer blocks** (`MomoTransformerBlock`) — `N_LAYERS` deep
 - **RMS normalization** — applied before the output head
 - **Linear output head** — projects to vocabulary logits
 
-Each `GPTTransformerBlock` contains:
+Each `MomoTransformerBlock` contains:
 - Multi-head self-attention with sandwich normalization (pre-norm + post-norm) and a skip connection
 - SwiGLU feed-forward network with sandwich normalization (pre-norm + post-norm) and a skip connection
 - Optional dropout at embedding, attention, and shortcut sites
@@ -102,9 +102,9 @@ Token-by-token autoregressive decoding with:
 
 > Generate a fresh copy: `python3 utils/generate_architecture_diagram.py`
 
-The model is built from a hierarchy of PyTorch modules defined in [`GPTModel.py`](GPTModel.py) and [`Modules.py`](Modules.py).
+The model is built from a hierarchy of PyTorch modules defined in [`MomoModel.py`](MomoModel.py) and [`Modules.py`](Modules.py).
 
-### GPTModel
+### MomoModel
 
 The root module. Its `forward(inIndex, useCache)` pass runs:
 
@@ -113,7 +113,7 @@ token embeddings (nn.Embedding: VOCABULARY_SIZE × EMBEDDING_DIMENSION)
     ↓
 [optional] embedding dropout
     ↓
-GPTTransformerBlock × N_LAYERS
+MomoTransformerBlock × N_LAYERS
     ↓
 RMSNormalization
     ↓
@@ -126,7 +126,7 @@ The `useCache` flag enables KV caching for fast autoregressive generation. `rese
 
 ---
 
-### GPTTransformerBlock
+### MomoTransformerBlock
 
 Each block applies two sub-layers with sandwich normalization (pre-norm and post-norm) around the core operation and a skip connection:
 
@@ -246,14 +246,14 @@ Initialising post-norm scales to `1/√layer` keeps the residual contribution of
 
 ```
 momo-llm/
-├── GPTModel.py                         # Transformer model and block definitions
-├── GPTModelConfig.py                   # Pre-defined architecture configs
+├── MomoModel.py                         # Transformer model and block definitions
+├── MomoModelConfig.py                   # Pre-defined architecture configs
 ├── Modules.py                          # Attention, normalization, FFN modules
 ├── Tokenizers.py                       # SentencePiece and GPT-2 tokenizer wrappers
 ├── Data.py                             # DataLoader creation and file discovery
 ├── DataPreProcessing.py                # Text normalization and replacement rules
 ├── GenerateText.py                     # Autoregressive text generation
-├── GPTModelStorage.py                  # Model save/load utilities
+├── MomoModelStorage.py                  # Model save/load utilities
 │
 ├── TrainModel.py                       # CLI: train a model
 ├── RunModel.py                         # CLI: generate text from a trained model
@@ -286,7 +286,7 @@ momo-llm/
 
 ## Configuration
 
-Model architectures are defined as named configs in [`GPTModelConfig.py`](GPTModelConfig.py). Each config specifies:
+Model architectures are defined as named configs in [`MomoModelConfig.py`](MomoModelConfig.py). Each config specifies:
 
 | Field | Description |
 |---|---|
@@ -305,7 +305,7 @@ Model architectures are defined as named configs in [`GPTModelConfig.py`](GPTMod
 | `TOKENIZER_TYPE` | `"sentencepiece"` or `"gpt2"` |
 | `TOKENIZER_NAME` | Tokenizer model name to load |
 
-To add a new config, define a dict in `GPTModelConfig.py` and register it in the `modelConfigs` list:
+To add a new config, define a dict in `MomoModelConfig.py` and register it in the `modelConfigs` list:
 
 ```python
 MY_CONFIG = {
@@ -397,7 +397,7 @@ python3 TrainModel.py [options]
 | Argument | Default | Description |
 |---|---|---|
 | `--model` | required | Model name; saved to `models/{name}/` |
-| `--config` | required | Config name from `GPTModelConfig.py` |
+| `--config` | required | Config name from `MomoModelConfig.py` |
 | `--inputData` | required | Glob pattern for `.bin` data files |
 | `--batchSize` | `40` | Training batch size |
 | `--numberOfEpochs` | — | Number of full passes over the dataset |

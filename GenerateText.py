@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from GPTModelConfig import *
-from GPTModelStorage import *
+from MomoModelConfig import *
+from MomoModelStorage import *
 
 
 def textToTokens(text,tkz):
@@ -127,11 +127,13 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,minP=Non
     with torch.no_grad():
         
         # start the counter to keep track of the size of the text generated or started with so far
+        #ensure idx is no larger than the model supported max context size
+        idx = idx[:,-contextSize:]
         epochTextGenerated = len(idx[0])
 
-        #ensure idx is no larger than the model supported max context size and fill the cache with the prompt   
+        # fill the cache with the prompt
         model.resetCache()
-        logits = model(idx[:,-contextSize:],True)
+        logits = model(idx,True)
         
         #generate the requested logits and (on the first pass process the first generated logit of the initial model call)
         for i in range(maxNewTokens):
@@ -158,7 +160,7 @@ def generateTextCached(model, idx, maxNewTokens,temperature=0.9,topK=40,minP=Non
             
             # if the generated text exceeds this generation epoch the context size reset the model and feed it half the previously generated context to start with
             # this prevents the model from generating errors when exceeding the context size
-            if(epochTextGenerated>0 and epochTextGenerated % contextSize==0):
+            if(epochTextGenerated >= contextSize):
                 #take half of the previously generated text and reset the epoch text generated counter to the provided restart prompt size
                 newGenIdx = idx[:,-int(epochTextGenerated-(contextSize/2)):]
                 epochTextGenerated = len(newGenIdx[0])

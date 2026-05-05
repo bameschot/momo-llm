@@ -12,9 +12,9 @@ import torch.nn as nn
 from Tokenizers import *
 from Data import create_tokenized_dataloader_v1,readInputFilePaths, TOKENIZER_PROCESSED_DATA_DIRECTORY
 from GenerateText import generateText, textToTokens, tokensToText
-from GPTModel import GPTModel
-from GPTModelConfig import *
-from GPTModelStorage import *
+from MomoModel import MomoModel
+from MomoModelConfig import *
+from MomoModelStorage import *
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -333,7 +333,7 @@ def loadModelForTraining(modelName, modelConfig,loadModelFromCheckpoint, learnin
         print(f"Loaded model {modelName} from file parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb")
     else: 
         torch.set_default_dtype(getDataTypeFromConfig(modelConfig))
-        model = GPTModel(modelConfig,device).to(device)
+        model = MomoModel(modelConfig,device).to(device)
         print(f"Starting new model {modelName} with parameters: {model.numberOfParameters():_} and memory size: {model.memSizeMb():_} mb and config {model.config}")
         optimizer = torch.optim.AdamW(params=model.parameters(),lr=learningRate,weight_decay=weightDecay)
         spModelBytes = None

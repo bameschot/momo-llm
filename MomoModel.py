@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 
-from GPTModelConfig import *
+from MomoModelConfig import *
 
 from Modules import RMSNormalization, FeedForwardBypass, MultiHeadAttention
 
-class GPTModel(nn.Module):
+class MomoModel(nn.Module):
     def __init__(self,config,device):
         super().__init__()
         self.config=config
@@ -27,7 +27,7 @@ class GPTModel(nn.Module):
             self.dropoutEmbeddings = None
         #create the transformer blocks
         self.tranformerBlocks = nn.ModuleList(
-            [GPTTransformerBlock(config,dtType=dtType,layer=layerDepth+1,device=device) for layerDepth in range(config[N_LAYERS])]
+            [MomoTransformerBlock(config,dtType=dtType,layer=layerDepth+1,device=device) for layerDepth in range(config[N_LAYERS])]
         )
         #create the final normalization layer
         self.finalNormalization = RMSNormalization(embeddingDimension=config[EMBEDDING_DIMENSION],layer=None,dtType=dtType,device=device)
@@ -86,7 +86,7 @@ class GPTModel(nn.Module):
             block.attention.resetCache()
 
 
-class GPTTransformerBlock(nn.Module):
+class MomoTransformerBlock(nn.Module):
     def __init__(self,config,layer,dtType,device):
         super().__init__()
         self.attention = MultiHeadAttention(

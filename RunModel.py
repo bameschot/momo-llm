@@ -6,8 +6,8 @@ import torch._dynamo
 
 from Tokenizers import *
 from GenerateText import generateTextCached, textToTokens, tokensToText
-from GPTModelConfig import *
-from GPTModelStorage import *
+from MomoModelConfig import *
+from MomoModelStorage import *
 
 
 ########################################
