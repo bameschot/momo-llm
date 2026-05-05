@@ -27,7 +27,7 @@ parser = argparse.ArgumentParser(
     )
 parser.add_argument("--model", type=str,default="TestEconomy_small_r", help="The name of the model to train")
 parser.add_argument('--newModel', action='store_false',help= "indicates if a new model should be trained, if not the model file should be present in ./models/<model-name>/<model-name>.pth, a new model is stored in a folder with the same name")
-parser.add_argument('--copyModel', type=str,default=None,help= "indicates if the model should be copied, the original model file should be present in ./models/<model-name>/<model-name>.pth, a new model has the indicated name postfixes (-<name>)")
+parser.add_argument('--copyModel', type=str,default=None,help= "indicates if the model should be copied, the original model file should be present in ./models/<model-name>/<model-name>.pth, a new model has the indicated name postfixed (-<name>)")
 
 parser.add_argument("--config", type=str,default="GPT_CONFIG_SMALL_CTX512_8_8_512", help="Determines the model configuration that a new model is initialised with, this parameter is ignored for models loaded from a checkpoint")
 parser.add_argument("--inputData", type=str,default=TOKENIZER_PROCESSED_DATA_DIRECTORY, help="The glob pattern for selecting input data")
