@@ -108,10 +108,10 @@ def sublayer_bg(cx, w, y_top, y_bot, label):
 
 
 # ─────────────────────────────────────────────────────────────
-# PANEL 1  GPTModel
+# PANEL 1  MomoModel
 # ─────────────────────────────────────────────────────────────
 P1, W1 = 2.8, 4.8
-panel_title(P1, 14.68, 'GPTModel')
+panel_title(P1, 14.68, 'MomoModel')
 
 box(P1, 14.0, W1, 'Input Tokens', fc=C_IO[0], ec=C_IO[1], bold=True)
 darr(P1, 14.0 - 0.26, 13.0 + 0.28)
@@ -136,7 +136,7 @@ ax.add_patch(FancyBboxPatch(
 ax.text(P1 + W1 / 2 + 0.12, blk_cy + blk_h / 2,
         '× N_LAYERS', ha='right', va='bottom',
         fontsize=8, color='#546e7a', style='italic')
-box(P1, blk_cy + 0.15, W1 - 0.3, 'GPTTransformerBlock', fc=C_ATTN[0], ec=C_ATTN[1])
+box(P1, blk_cy + 0.15, W1 - 0.3, 'MomoTransformerBlock', fc=C_ATTN[0], ec=C_ATTN[1])
 ax.text(P1, blk_cy - 0.28, '(see panel 2)',
         ha='center', va='center', fontsize=7.5, color='#555', style='italic')
 
@@ -156,13 +156,13 @@ box(P1, 7.55, W1, 'Logits',
     fc=C_IO[0], ec=C_IO[1], bold=True)
 
 # ─────────────────────────────────────────────────────────────
-# PANEL 2  GPTTransformerBlock
+# PANEL 2  MomoTransformerBlock
 # ─────────────────────────────────────────────────────────────
 vdiv(5.8)
 P2, W2 = 9.1, 4.4
 SK = P2 + W2 / 2 + 0.65
 
-panel_title(P2, 14.68, 'GPTTransformerBlock')
+panel_title(P2, 14.68, 'MomoTransformerBlock')
 
 in_y  = 14.0
 n1_y  = 13.13   # pre-norm  (layer=None, scale init = 1)
