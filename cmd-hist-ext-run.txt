@@ -4,13 +4,17 @@ python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt|./i
 ;
 python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/*-[0][3][0-9].txt" --outputFileName="subtitles-cleaned-359-16k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=800 --vocabulary="synthetic-conversations-16k-lc-ext-16000" --tokenizer=sentencepiece --newOutputFile 
 ;
-python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --outputFileName="synthetic-conversations-16k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-16k-lc-ext-16000" --tokenizer=sentencepiece --newOutputFile 
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --outputFileName="synthetic-all-16k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-16k-lc-ext-16000" --tokenizer=sentencepiece --newOutputFile 
+;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-**/**.txt" --outputFileName="synthetic-emotion-16k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-16k-lc-ext-16000" --tokenizer=sentencepiece --newOutputFile 
+;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-fact**/**.txt" --outputFileName="synthetic-facts-16k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-16k-lc-ext-16000" --tokenizer=sentencepiece --newOutputFile 
 
 
 --
 python3 TrainModel.py --model="english-conversations-ext-lc-16k-30_6m" --inputData="processed-data/subtitles-cleaned-359-16k-lc-ext/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=5  --numberOfEpochs=1 --peakLearningRate=0.012 --minimalLearningRate=0.009 --weightDecay=0.0005 --config="CONV_ENG_LC_16K_CONFIG_XS_500_12L_14H_420E" --newModel
 ;
-python3 TrainModel.py --model="english-conversations-ext-lc-16k-30_6m" --inputData="processed-data/synthetic-conversations-16k-lc-ext/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=5  --numberOfEpochs=4 --peakLearningRate=0.004 --minimalLearningRate=0.001 --weightDecay=0.0005 --config="CONV_ENG_LC_16K_CONFIG_XS_500_12L_14H_420E" --copyModel="-synth-con"
+python3 TrainModel.py --model="english-conversations-ext-lc-16k-30_6m" --inputData="processed-data/synthetic-emotion-16k-lc-ext/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=5  --numberOfEpochs=4 --peakLearningRate=0.004 --minimalLearningRate=0.001 --weightDecay=0.0005 --config="CONV_ENG_LC_16K_CONFIG_XS_500_12L_14H_420E" --copyModel="-synth-con"
 
 
 --12k
@@ -19,8 +23,13 @@ python3 PreProcessTokenizer.py --inputData="./input-data/synthetic-**/**.txt|./i
 ;
 python3 PreProcessDataFiles.py --inputData="./input-data/english-subtitles-cleaned/*-[0][3][0-9].txt" --outputFileName="subtitles-cleaned-359-12k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=800 --vocabulary="synthetic-conversations-12k-lc-ext-12000" --tokenizer=sentencepiece --newOutputFile 
 ;
-python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion/**.txt" --outputFileName="synthetic-conversations-12k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-12k-lc-ext-12000" --tokenizer=sentencepiece --newOutputFile 
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-**/**.txt" --outputFileName="synthetic-all-12k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-12k-lc-ext-12000" --tokenizer=sentencepiece --newOutputFile 
+;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-emotion-**/**.txt" --outputFileName="synthetic-emotion-12k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-12k-lc-ext-12000" --tokenizer=sentencepiece --newOutputFile 
+;
+python3 PreProcessDataFiles.py --inputData="./input-data/synthetic-fact**/**.txt" --outputFileName="synthetic-facts-12k-lc-ext" --isTokenized --forceLowerCase --newOutputFile --outputBatchSizeMb=1600 --vocabulary="synthetic-conversations-12k-lc-ext-12000" --tokenizer=sentencepiece --newOutputFile 
+
 
 python3 TrainModel.py --model="english-conversations-lc-12k-15_1m" --inputData="processed-data/subtitles-cleaned-359-12k-lc-ext/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=5  --numberOfEpochs=1 --peakLearningRate=0.012 --minimalLearningRate=0.009 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_800_8L_10H_330E" --newModel
 ;
-python3 TrainModel.py --model="english-conversations-lc-12k-15_1m" --inputData="processed-data/synthetic-conversations-12k-lc-ext/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=4 --peakLearningRate=0.004 --minimalLearningRate=0.001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_800_8L_10H_330E" --copyModel="-sc"
+python3 TrainModel.py --model="english-conversations-lc-12k-21_0m" --inputData="processed-data/synthetic-emotion-12k-lc-ext/**.bin" --shuffleBatches --device="mps" --startContext="hey how are you?[eos]" --warmupSteps=100 --evaluationStepFrequency=100 --checkpointStepStorageFrequency=1000 --batchSize=10  --numberOfEpochs=5 --peakLearningRate=0.006 --minimalLearningRate=0.001 --weightDecay=0.0005 --config="CONV_ENG_LC_12K_CONFIG_XS_512_36L_8H_256E_GQA" --newModel 
